@@ -1,0 +1,7 @@
+node_modules
+public
+next
+eslint.config.mjs
+next.config.ts
+package.json
+tsconfig.json

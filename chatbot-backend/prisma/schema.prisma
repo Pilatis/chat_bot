@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  companies Company[]
+
+  @@map("users")
+}
+
+model Company {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  whatsappNumber String?
+  ownerId       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products      Product[]
+  messages      Message[]
+  trainingData  TrainingData[]
+  subscriptions Subscription[]
+
+  @@map("companies")
+}
+
+model Product {
+  id        String   @id @default(uuid())
+  name      String
+  description String?
+  price     Float?
+  companyId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("products")
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  from      MessageFrom
+  content   String
+  companyId  String
+  createdAt DateTime    @default(now())
+
+  // Relations
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model TrainingData {
+  id        String   @id @default(uuid())
+  companyId String
+  data      Json
+  trainedAt DateTime @default(now())
+
+  // Relations
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("training_data")
+}
+
+model Plan {
+  id            String  @id @default(uuid())
+  name          String
+  price         Float
+  limitMessages Int
+  createdAt     DateTime @default(now())
+
+  // Relations
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id        String           @id @default(uuid())
+  companyId String
+  planId    String
+  status    SubscriptionStatus @default(ACTIVE)
+  startedAt DateTime         @default(now())
+  expiresAt DateTime?
+
+  // Relations
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan      Plan    @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}
+
+enum MessageFrom {
+  CLIENT
+  BOT
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
