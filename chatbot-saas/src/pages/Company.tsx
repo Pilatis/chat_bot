@@ -9,20 +9,39 @@ import {
   Button,
   IconButton,
 } from '@chakra-ui/react';
-import { FiPlus, FiTrash2, FiSave } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiSave, FiAlertCircle, FiInfo } from 'react-icons/fi';
 import { Card } from '../components/Card';
+import { EmptyState } from '../components/ui/empty-state';
+import { AddProductModal } from '../components/company/AddProductModal';
+import { Tooltip } from '../components/ui/tooltip';
 import { useCompany } from '../hooks/useCompany';
 import { useToast } from '../hooks/useToast';
+import { useApi } from '../hooks/use-api';
+import { phoneMask } from '../utils/masks';
+import { CreateProductData } from '../types/company.types';
+import { AITrainingAidMessage } from '../components/company/AI-training-aid-message';
 
 
 export const Company: React.FC = () => {
-  const { company, isLoading, error, createOrUpdateCompany, createProduct, updateProduct, deleteProduct } = useCompany();
+  const { 
+    company, 
+    isLoading, 
+    error, 
+    createOrUpdateCompany, 
+    createProduct, 
+    deleteProduct,
+    isSaving,
+    isProductLoading
+  } = useCompany();
   const { showSuccess, showError } = useToast();
+  const { api } = useApi();
   
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [isTrained, setIsTrained] = useState(false);
+  const [isTraining, setIsTraining] = useState(false);
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
 
   // Carregar dados da empresa quando o componente montar
   useEffect(() => {
@@ -33,22 +52,22 @@ export const Company: React.FC = () => {
     }
   }, [company]);
 
-  const addProduct = async () => {
+  const handleAddProduct = async (productData: CreateProductData) => {
     if (!company) return;
     
     try {
-      await createProduct({
-        name: '',
-        description: '',
-        price: 0,
+      await createProduct(productData);
+      showSuccess('Produto adicionado com sucesso!', {
+        title: 'Sucesso!'
       });
-      showSuccess('Produto adicionado!');
     } catch (err) {
       showError(error || 'Tente novamente', {
         title: 'Erro ao adicionar produto'
       });
+      throw err; // Re-throw para o modal tratar
     }
   };
+
 
   const removeProduct = async (id: string) => {
     try {
@@ -61,17 +80,6 @@ export const Company: React.FC = () => {
     }
   };
 
-  const handleUpdateProduct = async (id: string, field: 'name' | 'description' | 'price', value: string | number) => {
-    try {
-      const updateData: any = {};
-      updateData[field] = value;
-      await updateProduct(id, updateData);
-    } catch (err) {
-      showError(error || 'Tente novamente', {
-        title: 'Erro ao atualizar produto'
-      });
-    }
-  };
 
   const handleSave = async () => {
     try {
@@ -91,12 +99,79 @@ export const Company: React.FC = () => {
     }
   };
 
-  const handleTrain = () => {
-    setIsTrained(true);
-    showSuccess('O chatbot foi treinado com os dados da sua empresa.', {
-      title: 'IA treinada!'
-    });
+  const handleTrain = async () => {
+    if (!company?.id) return;
+    
+    try {
+      setIsTraining(true);
+      
+      // Chamar API de treinamento - isso vai coletar TODOS os produtos e fazer treinamento geral
+      const response = await api.post(`/chatbot/${company.id}/train`);
+      
+      if (response.data?.success) {
+        setIsTrained(true);
+        showSuccess('IA treinada com sucesso! O chatbot agora conhece todos os seus produtos e pode responder automaticamente via WhatsApp.', {
+          title: 'Treinamento concluído!'
+        });
+      } else {
+        throw new Error(response.data?.message || 'Erro ao treinar IA');
+      }
+    } catch (err: any) {
+      showError(err.message || 'Erro ao treinar IA. Verifique se há produtos cadastrados.', {
+        title: 'Erro no treinamento'
+      });
+    } finally {
+      setIsTraining(false);
+    }
   };
+
+  // Loading inicial - carregando dados da empresa
+  if (isLoading && !company) {
+    return (
+      <Box>
+        <VStack gap={6} align="stretch">
+          <Box>
+            <Text fontSize="h2" fontWeight="h2" color="grayBold" mb={2}>
+              Configurações da Empresa
+            </Text>
+            <Text color="grayBold">
+              Configure os dados da sua empresa para treinar o chatbot
+            </Text>
+          </Box>
+          <Card>
+            <VStack gap={4} align="center" py={8}>
+              <Text color="gray.600">Carregando dados da empresa...</Text>
+            </VStack>
+          </Card>
+        </VStack>
+      </Box>
+    );
+  }
+
+  // Erro ao carregar empresa
+  if (error && !company && !isLoading) {
+    return (
+      <Box>
+        <VStack gap={6} align="stretch">
+          <Box>
+            <Text fontSize="h2" fontWeight="h2" color="grayBold" mb={2}>
+              Configurações da Empresa
+            </Text>
+            <Text color="grayBold">
+              Configure os dados da sua empresa para treinar o chatbot
+            </Text>
+          </Box>
+          <Card>
+            <EmptyState
+              title="Erro ao carregar dados"
+              description={error || "Não foi possível carregar as informações da empresa. Tente novamente."}
+              icon={<FiAlertCircle size={48} color="#ef4444" />}
+            />
+          </Card>
+        </VStack>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -119,6 +194,7 @@ export const Company: React.FC = () => {
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 size="lg"
+                disabled={isSaving || isProductLoading}
               />
             </Box>
 
@@ -130,6 +206,7 @@ export const Company: React.FC = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 resize="vertical"
+                disabled={isSaving || isProductLoading}
               />
             </Box>
 
@@ -137,9 +214,10 @@ export const Company: React.FC = () => {
               <Text mb={2} fontWeight="medium">Número do WhatsApp</Text>
               <Input
                 placeholder="(11) 99999-9999"
-                value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
+                value={phoneMask(whatsappNumber)}
+                onChange={(e) => setWhatsappNumber(phoneMask(e.target.value))}
                 size="lg"
+                disabled={isSaving || isProductLoading}
               />
             </Box>
 
@@ -147,16 +225,45 @@ export const Company: React.FC = () => {
 
             <Box>
               <HStack justify="space-between" mb={4}>
-                <Text fontSize="lg" fontWeight="semibold">
-                  Produtos/Serviços
-                </Text>
+                <HStack gap={2} align="center">
+                  <Text fontSize="lg" fontWeight="semibold">
+                    Produtos/Serviços
+                  </Text>
+                  <Tooltip
+                    content={
+                      <VStack align="start" gap={2} maxW="300px">
+                        <Text fontSize="sm" fontWeight="medium">
+                          Por que cadastrar produtos/serviços?
+                        </Text>
+                        <Text fontSize="xs">
+                          Ao cadastrar seus produtos e serviços aqui, a IA do chatbot será treinada com essas informações. 
+                          Quando clientes perguntarem sobre seus produtos via WhatsApp, o chatbot poderá responder automaticamente 
+                          com detalhes, preços e características, melhorando o atendimento e aumentando as vendas.
+                        </Text>
+                      </VStack>
+                    }
+                    showArrow
+                  >
+                    <IconButton
+                      aria-label="Informação sobre produtos"
+                      size="xs"
+                      variant="ghost"
+                      color="gray.500"
+                      _hover={{ color: 'primaryButton', bg: 'gray.100' }}
+                    >
+                      <FiInfo />
+                    </IconButton>
+                  </Tooltip>
+                </HStack>
                 <Button
-                  onClick={addProduct}
+                  onClick={() => setIsAddProductModalOpen(true)}
                   size="sm"
                   bg="primaryButton"
                   color="white"
                   variant="outline"
                   _hover={{ bg: 'baseOrange' }}
+                  loading={isProductLoading}
+                  disabled={isProductLoading || isSaving}
                 >
                   <FiPlus />
                   Adicionar Produto
@@ -174,52 +281,57 @@ export const Company: React.FC = () => {
                     bg="gray.50"
                   >
                     <HStack justify="space-between" mb={3}>
-                      <Text fontWeight="medium">Produto {index + 1}</Text>
-                      <IconButton
-                        aria-label="Remover produto"
-                        size="sm"
-                        bg="red.500"
-                        color="white"
-                        variant="ghost"
-                        _hover={{ bg: 'red.600' }}
-                        onClick={() => removeProduct(product.id)}
-                      >
-                        <FiTrash2 />
-                      </IconButton>
+                      <Text fontWeight="medium">{product.name || `Produto ${index + 1}`}</Text>
+                      <HStack gap={2}>
+                        <IconButton
+                          aria-label="Remover produto"
+                          size="sm"
+                          variant="ghost"
+                          color="red.500"
+                          _hover={{ bg: 'red.50' }}
+                          onClick={() => removeProduct(product.id)}
+                          disabled={isProductLoading || isSaving}
+                          loading={isProductLoading}
+                        >
+                          <FiTrash2 />
+                        </IconButton>
+                      </HStack>
                     </HStack>
                     
                     <VStack gap={3} align="stretch">
-                      <Input
-                        placeholder="Nome do produto"
-                        value={product.name}
-                        onChange={(e) => handleUpdateProduct(product.id, 'name', e.target.value)}
-                        size="sm"
-                      />
-                      <Textarea
-                        placeholder="Descrição do produto"
-                        value={product.description || ''}
-                        onChange={(e) => handleUpdateProduct(product.id, 'description', e.target.value)}
-                        rows={2}
-                        size="sm"
-                      />
-                      <Input
-                        placeholder="Preço (R$)"
-                        type="number"
-                        value={product.price || 0}
-                        onChange={(e) => handleUpdateProduct(product.id, 'price', parseFloat(e.target.value) || 0)}
-                        size="sm"
-                      />
+                      <Box>
+                        <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                          Descrição
+                        </Text>
+                        <Text fontSize="sm" color="gray.600">
+                          {product.description || 'Sem descrição'}
+                        </Text>
+                      </Box>
+                      {product.price !== null && product.price !== undefined && product.price > 0 && (
+                        <Box>
+                          <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                            Preço
+                          </Text>
+                          <Text fontSize="sm" color="gray.600" fontWeight="semibold">
+                            R$ {product.price.toFixed(2).replace('.', ',')}
+                          </Text>
+                        </Box>
+                      )}
                     </VStack>
                   </Box>
                 ))}
 
                 {(!company?.products || company.products.length === 0) && (
-                  <Text color="gray.500" textAlign="center" py={4}>
-                    Nenhum produto adicionado ainda
-                  </Text>
+                  <EmptyState
+                    title="Nenhum produto adicionado"
+                    description="Adicione produtos ou serviços para treinar o chatbot"
+                    icon={<FiPlus size={32} color="#9ca3af" />}
+                  />
                 )}
               </VStack>
             </Box>
+
+            <AITrainingAidMessage />
 
             <HStack gap={4}>
               <Button
@@ -228,6 +340,8 @@ export const Company: React.FC = () => {
                 color="white"
                 size="lg"
                 _hover={{ bg: 'baseOrange' }}
+                loading={isSaving}
+                disabled={isSaving || isProductLoading}
               >
                 <FiSave />
                 Salvar Informações
@@ -239,8 +353,8 @@ export const Company: React.FC = () => {
                 color="white"
                 size="lg"
                 _hover={{ bg: 'green.600' }}
-                disabled={!companyName || !description || !company?.products || company.products.length === 0}
-                loading={isLoading}
+                disabled={!companyName || !description || !company?.products || company.products.length === 0 || isSaving || isProductLoading || isTraining}
+                loading={isTraining}
               >
                 {isTrained ? 'Retreinar IA' : 'Treinar IA'}
               </Button>
@@ -262,6 +376,13 @@ export const Company: React.FC = () => {
           </VStack>
         </Card>
       </VStack>
+
+      <AddProductModal
+        isOpen={isAddProductModalOpen}
+        onClose={() => setIsAddProductModalOpen(false)}
+        onSave={handleAddProduct}
+        isLoading={isProductLoading}
+      />
     </Box>
   );
 };

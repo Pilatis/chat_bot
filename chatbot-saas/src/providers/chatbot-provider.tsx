@@ -12,8 +12,9 @@ interface ChatbotProviderProps {
 
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, companyId }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Inicia como true para carregamento inicial
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isTraining, setIsTraining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<ChatStats | null>(null);
   
@@ -69,7 +70,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
 
   const trainAI = async (): Promise<void> => {
     try {
-      setIsLoading(true);
+      setIsTraining(true);
       setError(null);
 
       const response = await api.post(`/chatbot/${companyId}/train`);
@@ -83,7 +84,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
     } catch (err: any) {
       setError(err.message || 'Erro ao treinar IA');
     } finally {
-      setIsLoading(false);
+      setIsTraining(false);
     }
   };
 
@@ -131,6 +132,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
       getChatHistory();
       getChatStats();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
   const contextValue: ChatbotContextType = {
@@ -144,8 +146,10 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
     getChatHistory,
     getChatStats,
     clearMessages,
-    clearError
-  };
+    clearError,
+    // Estado adicional para treinamento
+    isTraining
+  } as ChatbotContextType;
 
   return (
     <ChatbotContext.Provider value={contextValue}>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   VStack,
@@ -9,61 +9,31 @@ import {
   Button,
   Badge,
 } from '@chakra-ui/react';
-import { FiCheck, FiStar, FiZap } from 'react-icons/fi';
+import { FiCheck, FiStar, FiZap, FiCheckCircle } from 'react-icons/fi';
 import { Card } from '../components/Card';
 import { Plan } from '../types/plan.types';
-
-const plans: Plan[] = [
-  {
-    id: 'free',
-    name: 'Free',
-    price: 0,
-    messagesLimit: 20,
-    features: [
-      '20 mensagens por dia',
-      'Suporte por email',
-      'Dashboard básico',
-      '1 chatbot',
-    ],
-  },
-  {
-    id: 'basic',
-    name: 'Básico',
-    price: 59,
-    messagesLimit: 500,
-    features: [
-      '500 mensagens por mês',
-      'Suporte prioritário',
-      'Analytics completos',
-      'Até 3 chatbots',
-      'Integração WhatsApp',
-      'Relatórios mensais',
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: 149,
-    messagesLimit: 2000,
-    features: [
-      '2000 mensagens por mês',
-      'Suporte 24/7',
-      'Analytics avançados',
-      'Chatbots ilimitados',
-      'Integração WhatsApp + Telegram',
-      'Relatórios personalizados',
-      'API para desenvolvedores',
-      'Treinamento personalizado',
-    ],
-    isPopular: true,
-  },
-];
+import { usePlans } from '../providers';
 
 export const Plans: React.FC = () => {
+  const { getAllPlans, allPlans, assignPlan, isLoading, currentPlan, getUserPlan } = usePlans();
 
-  const handleSubscribe = (planId: string) => {
-    // Simular assinatura
-    console.log(`Assinando plano: ${planId}`);
+  useEffect(() => {
+    getAllPlans();
+    getUserPlan();
+  }, []);
+
+  const handleSubscribe = async (planId: string) => {
+    try {
+      await assignPlan(planId);
+      // Plano atribuído com sucesso - getUserPlan será chamado automaticamente pelo provider
+    } catch (error) {
+      console.error('Erro ao atribuir plano:', error);
+      // Tratar erro - pode mostrar toast/notificação aqui
+    }
+  };
+
+  const isPlanActive = (plan: Plan): boolean => {
+    return currentPlan?.planType === plan.planType;
   };
 
   return (
@@ -80,34 +50,54 @@ export const Plans: React.FC = () => {
         </Box>
 
         <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={6} columnGap={5}>
-          {plans.map((plan) => (
-            <GridItem key={plan.id}>
-              <Card
-                position="relative"
-                bg={plan.isPopular ? 'blue.50' : 'white'}
-                border={plan.isPopular ? '2px' : '1px'}
-                borderColor={plan.isPopular ? 'blue.500' : 'gray.200'}
-                transform={plan.isPopular ? 'scale(1.05)' : 'scale(1)'}
-                transition="all 0.2s"
-              >
-                {plan.isPopular && (
-                  <Badge
-                    position="absolute"
-                    top="-10px"
-                    left="50%"
-                    transform="translateX(-50%)"
-                    colorScheme="blue"
-                    px={3}
-                    py={1}
-                    borderRadius="full"
-                    fontSize="sm"
-                  >
-                    <HStack gap={1}>
-                      <FiStar />
-                      <Text>Mais Popular</Text>
-                    </HStack>
-                  </Badge>
-                )}
+          {allPlans.map((plan: Plan) => {
+            const isActive = isPlanActive(plan);
+            return (
+              <GridItem key={plan.id}>
+                <Card
+                  position="relative"
+                  bg={isActive ? 'green.50' : plan.planType === 'PRO' ? 'blue.50' : 'white'}
+                  border={isActive ? '2px' : plan.planType === 'PRO' ? '2px' : '1px'}
+                  borderColor={isActive ? 'green.500' : plan.planType === 'PRO' ? 'blue.500' : 'gray.200'}
+                  transform={plan.planType === 'PRO' || isActive ? 'scale(1.05)' : 'scale(1)'}
+                  transition="all 0.2s"
+                >
+                  {isActive && (
+                    <Badge
+                      position="absolute"
+                      top="-10px"
+                      left="50%"
+                      transform="translateX(-50%)"
+                      colorScheme="green"
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                      fontSize="sm"
+                    >
+                      <HStack gap={1}>
+                        <FiCheckCircle />
+                        <Text>Plano Atual</Text>
+                      </HStack>
+                    </Badge>
+                  )}
+                  {!isActive && plan.planType === 'PRO' && (
+                    <Badge
+                      position="absolute"
+                      top="-10px"
+                      left="50%"
+                      transform="translateX(-50%)"
+                      colorScheme="blue"
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                      fontSize="sm"
+                    >
+                      <HStack gap={1}>
+                        <FiStar />
+                        <Text>Mais Popular</Text>
+                      </HStack>
+                    </Badge>
+                  )}
 
                 <VStack gap={6} align="stretch">
                   <Box textAlign="center">
@@ -125,37 +115,49 @@ export const Plans: React.FC = () => {
                       )}
                     </HStack>
                     <Text fontSize="sm" color="gray.600" mt={1}>
-                      {plan.messagesLimit} mensagens por {plan.price === 0 ? 'dia' : 'mês'}
+                      {plan.limitMessages} mensagens por {plan.price === 0 ? 'dia' : 'mês'}
                     </Text>
                   </Box>
 
                   <Box h="1px" bg="gray.200" />
 
                   <VStack gap={3} align="stretch">
-                    {plan.features.map((feature, index) => (
+                    {plan.benefits.map((benefit: string, index: number) => (
                       <HStack key={index} align="start">
                         <FiCheck color="green" />
                         <Text fontSize="sm" color="gray.600">
-                          {feature}
+                          {benefit}
                         </Text>
                       </HStack>
                     ))}
                   </VStack>
 
                   <Button
-                    colorScheme={plan.isPopular ? 'blue' : 'gray'}
+                    colorScheme={isActive ? 'green' : plan.planType === 'PRO' ? 'blue' : 'gray'}
                     size="lg"
                     w="full"
-                    variant={plan.isPopular ? 'solid' : 'outline'}
-                    onClick={() => handleSubscribe(plan.id)}
+                    variant={isActive ? 'solid' : plan.planType === 'PRO' ? 'solid' : 'outline'}
+                    onClick={() => !isActive && handleSubscribe(plan.id)}
+                    loading={isLoading}
+                    disabled={isLoading || isActive}
                   >
-                    {plan.isPopular && <FiZap />}
-                    {plan.price === 0 ? 'Começar Grátis' : 'Assinar Plano'}
+                    {isActive ? (
+                      <>
+                        <FiCheckCircle />
+                        Plano Atual
+                      </>
+                    ) : (
+                      <>
+                        {plan.planType === 'PRO' && <FiZap />}
+                        {plan.price === 0 ? 'Começar Grátis' : 'Assinar Plano'}
+                      </>
+                    )}
                   </Button>
                 </VStack>
               </Card>
             </GridItem>
-          ))}
+          );
+          })}
         </Grid>
 
         <Card>

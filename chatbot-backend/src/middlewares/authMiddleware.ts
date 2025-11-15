@@ -6,6 +6,7 @@ export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
     email: string;
+    role: string;
   };
 }
 
@@ -29,7 +30,8 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
       const decoded = verifyAccessToken(token);
       req.user = {
         userId: decoded.userId,
-        email: decoded.email
+        email: decoded.email,
+        role: decoded.role
       };
       next();
     } catch (error) {

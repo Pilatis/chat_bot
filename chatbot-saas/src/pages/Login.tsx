@@ -62,7 +62,7 @@ export const Login: React.FC = () => {
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
             <Text fontSize="h1" fontWeight="h1" color="primaryButton">
-              Botatende
+              Chatbot
             </Text>
             <Text fontSize="h6" color="grayBold">
               Faça login para acessar sua conta

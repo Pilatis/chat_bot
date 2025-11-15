@@ -55,4 +55,6 @@ export interface CompanyContextType extends CompanyState {
   deleteProduct: (productId: string) => Promise<void>;
   refreshCompany: () => Promise<void>;
   clearError: () => void;
+  isSaving?: boolean;
+  isProductLoading?: boolean;
 }

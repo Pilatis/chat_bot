@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   VStack,
@@ -6,9 +6,10 @@ import {
   Text,
   Badge,
 } from '@chakra-ui/react';
-import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { FiAlertCircle, FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
 import { Card } from '../components/Card';
 import { ChatBox } from '../components/ChatBox';
+import { EmptyState } from '../components/ui/empty-state';
 import { useChatbot } from '../hooks/useChatbot';
 import { useCompany } from '../hooks/useCompany';
 import { useAuth } from '../hooks/useAuth';
@@ -27,18 +28,14 @@ export const Chatbot: React.FC = () => {
     getChatHistory, 
     getChatStats, 
     clearMessages, 
-    clearError 
+    clearError,
+    isTraining
   } = useChatbot();
 
   const isTrained = company && company.products && company.products.length > 0;
 
-  // Carregar histórico e estatísticas quando o componente montar
-  useEffect(() => {
-    if (company?.id) {
-      getChatHistory();
-      getChatStats();
-    }
-  }, [company?.id]);
+  // O provider já carrega o histórico e estatísticas automaticamente quando companyId muda
+  // Não precisamos chamar novamente aqui
 
   const handleSendMessage = async (content: string) => {
     if (!company?.id) return;
@@ -59,6 +56,58 @@ export const Chatbot: React.FC = () => {
       console.error('Erro ao treinar IA:', err);
     }
   };
+
+  // Loading inicial - carregando histórico e estatísticas
+  if (isLoading && messages.length === 0) {
+    return (
+      <Box>
+        <VStack gap={6} align="stretch">
+          <Box>
+            <HStack gap={4} align="center">
+              <Text fontSize="2xl" fontWeight="bold" color="gray.700">
+                Teste do Chatbot
+              </Text>
+            </HStack>
+            <Text color="gray.600">
+              Teste o seu chatbot antes de colocá-lo em produção
+            </Text>
+          </Box>
+          <Card>
+            <VStack gap={4} align="center" py={8}>
+              <Text color="gray.600">Carregando histórico de conversas...</Text>
+            </VStack>
+          </Card>
+        </VStack>
+      </Box>
+    );
+  }
+
+  // Erro ao carregar mensagens
+  if (error && messages.length === 0 && !isLoading) {
+    return (
+      <Box>
+        <VStack gap={6} align="stretch">
+          <Box>
+            <HStack gap={4} align="center">
+              <Text fontSize="2xl" fontWeight="bold" color="gray.700">
+                Teste do Chatbot
+              </Text>
+            </HStack>
+            <Text color="gray.600">
+              Teste o seu chatbot antes de colocá-lo em produção
+            </Text>
+          </Box>
+          <Card>
+            <EmptyState
+              title="Erro ao carregar histórico"
+              description={error || "Não foi possível carregar o histórico de conversas. Tente novamente."}
+              icon={<FiAlertCircle size={48} color="#ef4444" />}
+            />
+          </Card>
+        </VStack>
+      </Box>
+    );
+  }
 
   return (
     <Box>

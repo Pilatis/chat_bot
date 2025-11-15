@@ -51,13 +51,9 @@ const ChatbotRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 const ChatbotRouteInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { company } = useCompany();
-  
-  if (!company?.id) {
-    return <div>Carregando empresa...</div>;
-  }
 
   return (
-    <ChatbotProvider companyId={company.id}>
+    <ChatbotProvider companyId={company?.id || ''}>
       <ProtectedRoute>
         {children}
       </ProtectedRoute>
@@ -77,13 +73,9 @@ const AnalyticsRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const AnalyticsRouteInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { company } = useCompany();
-  
-  if (!company?.id) {
-    return <div>Carregando empresa...</div>;
-  }
 
   return (
-    <AnalyticsProvider companyId={company.id}>
+    <AnalyticsProvider companyId={company?.id || ''}>
       <ProtectedRoute>
         {children}
       </ProtectedRoute>

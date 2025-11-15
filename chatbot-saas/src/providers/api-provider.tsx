@@ -80,7 +80,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      window.location.href = '/login';
+     // window.location.href = '/login';
       throw new Error('Token refresh failed');
     }
   };

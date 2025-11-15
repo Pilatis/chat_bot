@@ -26,6 +26,7 @@ export const Register: React.FC = () => {
   const initialValues: RegisterFormData = {
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   };
@@ -35,6 +36,7 @@ export const Register: React.FC = () => {
       await register({
         name: values.name,
         email: values.email,
+        phone: values.phone,
         password: values.password,
       });
       
@@ -69,7 +71,7 @@ export const Register: React.FC = () => {
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
             <Text fontSize="h1" fontWeight="h1" color="primaryButton">
-              Botatende
+              Chatbot
             </Text>
             <Text fontSize="h6" color="grayBold">
               Crie sua conta gratuita
@@ -120,6 +122,23 @@ export const Register: React.FC = () => {
                           )}
                         </Box>
                       )}
+                    </Field>
+                    
+                    <Field name="phone">
+                      {({ field, meta }: FieldProps) => (
+                        <Box w="full">
+                          <Input
+                            {...field}
+                            placeholder="Telefone"
+                          />
+                          {meta.touched && meta.error && (
+                            <Text color="red.500" fontSize="sm" mt={1}>
+                              {meta.error}
+                            </Text>
+                          )}
+                        </Box>
+                      )}
+
                     </Field>
 
                     <Field name="password">

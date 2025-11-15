@@ -4,13 +4,16 @@ import { AuthProvider } from './auth-provider';
 import { CompanyProvider } from './company-provider';
 import { ChatbotProvider } from './chatbot-provider';
 import { AnalyticsProvider } from './analytics-provider';
+import { PlansProvider } from './plans-provider';
 
 // Provider para páginas que não precisam de companyId
 export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ApiProvider>
       <AuthProvider>
-        {children}
+        <PlansProvider>
+          {children}
+        </PlansProvider>
       </AuthProvider>
     </ApiProvider>
   );
@@ -25,11 +28,14 @@ export const CompanyAppProvider: React.FC<{
     <ApiProvider>
       <AuthProvider>
         <CompanyProvider>
+          <PlansProvider> 
+
           <ChatbotProvider companyId={companyId}>
             <AnalyticsProvider companyId={companyId}>
               {children}
             </AnalyticsProvider>
           </ChatbotProvider>
+          </PlansProvider>
         </CompanyProvider>
       </AuthProvider>
     </ApiProvider>
@@ -42,6 +48,7 @@ export { AuthProvider } from './auth-provider';
 export { CompanyProvider } from './company-provider';
 export { ChatbotProvider } from './chatbot-provider';
 export { AnalyticsProvider } from './analytics-provider';
+export { PlansProvider } from './plans-provider';
 
 // Exportar todos os hooks
 export { useApi } from '../hooks/use-api';
@@ -49,3 +56,4 @@ export { useAuth, useRequireAuth } from '../hooks/useAuth';
 export { useCompany, useProducts } from '../hooks/useCompany';
 export { useChatbot, useChat } from '../hooks/useChatbot';
 export { useAnalytics, useMetrics } from '../hooks/useAnalytics';
+export { usePlans } from '../hooks/usePlans';

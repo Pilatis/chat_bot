@@ -9,7 +9,9 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
   const [company, setCompany] = useState<Company | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Inicia como true para carregamento inicial
+  const [isSaving, setIsSaving] = useState(false);
+  const [isProductLoading, setIsProductLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { api } = useApi();
 
@@ -36,7 +38,7 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const createOrUpdateCompany = async (data: CreateCompanyData): Promise<void> => {
     try {
-      setIsLoading(true);
+      setIsSaving(true);
       setError(null);
       
       const response = await api.post('/company', data);
@@ -49,7 +51,7 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (err: any) {
       setError(err.message || 'Erro ao salvar empresa');
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -60,7 +62,7 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
-      setIsLoading(true);
+      setIsProductLoading(true);
       setError(null);
       
       const response = await api.post(`/company/${company.id}/products`, data);
@@ -74,13 +76,13 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (err: any) {
       setError(err.message || 'Erro ao criar produto');
     } finally {
-      setIsLoading(false);
+      setIsProductLoading(false);
     }
   };
 
   const updateProduct = async (productId: string, data: UpdateProductData): Promise<void> => {
     try {
-      setIsLoading(true);
+      setIsProductLoading(true);
       setError(null);
       
       const response = await api.put(`/company/products/${productId}`, data);
@@ -94,13 +96,13 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (err: any) {
       setError(err.message || 'Erro ao atualizar produto');
     } finally {
-      setIsLoading(false);
+      setIsProductLoading(false);
     }
   };
 
   const deleteProduct = async (productId: string): Promise<void> => {
     try {
-      setIsLoading(true);
+      setIsProductLoading(true);
       setError(null);
       
       const response = await api.deleted(`/company/products/${productId}`);
@@ -114,7 +116,7 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (err: any) {
       setError(err.message || 'Erro ao deletar produto');
     } finally {
-      setIsLoading(false);
+      setIsProductLoading(false);
     }
   };
 
@@ -132,8 +134,11 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
     updateProduct,
     deleteProduct,
     refreshCompany,
-    clearError
-  };
+    clearError,
+    // Estados adicionais para controle mais granular
+    isSaving,
+    isProductLoading
+  } as CompanyContextType;
 
   return (
     <CompanyContext.Provider value={contextValue}>

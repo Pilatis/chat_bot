@@ -38,4 +38,5 @@ export interface ChatbotContextType extends ChatbotState {
   getChatStats: () => Promise<void>;
   clearMessages: () => void;
   clearError: () => void;
+  isTraining?: boolean;
 }

@@ -4,6 +4,7 @@ import companyRoutes from '../modules/company/company.routes';
 import chatbotRoutes from '../modules/chatbot/chatbot.routes';
 import messageRoutes from '../modules/message/message.routes';
 import analyticsRoutes from '../modules/analytics/analytics.routes';
+import planRoutes from '../modules/plan/plan.routes';
 
 const router = Router();
 
@@ -21,6 +22,9 @@ router.use('/messages', messageRoutes);
 
 // Rotas de analytics
 router.use('/analytics', analyticsRoutes);
+
+// Rotas de planos
+router.use('/plan', planRoutes);
 
 // Rota de health check
 router.get('/health', (_req, res) => {

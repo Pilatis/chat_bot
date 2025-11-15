@@ -11,17 +11,36 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String    @unique
+  phone     String?   @unique
   password  String
+  role      UserRole  @default(CLIENT)
+  planType  PlanTypes @default(FREE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  companies Company[]
+  userPlan  UserPlan?
+
+  @@map("users")
+}
+
+model UserPlan {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  planId    String
+  planType  PlanTypes
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  companies Company[]
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan      Plan @relation(fields: [planId], references: [id])
 
-  @@map("users")
+  @@map("user_plans")
 }
 
 model Company {
@@ -84,14 +103,18 @@ model TrainingData {
 }
 
 model Plan {
-  id            String  @id @default(uuid())
+  id            String     @id @default(uuid())
   name          String
+  planType      PlanTypes  @unique
   price         Float
   limitMessages Int
-  createdAt     DateTime @default(now())
+  benefits      String[]   @default([])
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   // Relations
   subscriptions Subscription[]
+  userPlans     UserPlan[]
 
   @@map("plans")
 }
@@ -120,4 +143,15 @@ enum SubscriptionStatus {
   ACTIVE
   INACTIVE
   EXPIRED
+}
+
+enum UserRole {
+  ADMIN
+  CLIENT
+}
+
+enum PlanTypes {
+  FREE
+  BASIC
+  PRO
 }

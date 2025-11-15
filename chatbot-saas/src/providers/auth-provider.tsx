@@ -121,6 +121,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
   };
 
+  useEffect(() => {
+    if (isAuthenticated && localStorage.getItem('accessToken')) {
+      refreshUser();
+    }
+  }, [isAuthenticated, localStorage.getItem('accessToken')]);
+
   const contextValue: AuthContextType = {
     user,
     isAuthenticated,

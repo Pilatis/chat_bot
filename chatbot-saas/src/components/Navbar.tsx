@@ -7,10 +7,12 @@ import {
   Avatar,
   Menu,
   Text,
+  Portal
 } from '@chakra-ui/react';
 import { FiBell, FiUser, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { AvatarComponent } from './Avatar';
 
 interface NavbarProps {
   onOpen: () => void;
@@ -42,39 +44,36 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpen, display }) => {
             variant="ghost"
             onClick={onOpen}
             display={{ base: 'flex', md: 'none' }}
-          ><Box>☰</Box></IconButton>
+          >
+            <Box>☰</Box>
+          </IconButton>
           <Text fontSize="h5" fontWeight="h5" color="defaultBlack">
-            {user?.name || 'Botatende'}
+            {user?.name || 'Chatbot'}
           </Text>
         </HStack>
 
         <HStack gap={4}>
-          <IconButton
-            aria-label="Notificações"
-            variant="ghost"
-            size="sm"
-          >
+          <IconButton aria-label="Notificações" variant="ghost" size="sm">
             <FiBell />
           </IconButton>
-          
+
           <Menu.Root>
             <Menu.Trigger>
-              <Avatar.Root
-                size="sm"
-                bg="primaryButton"
-                color="white"
-              />
+              <AvatarComponent name={user?.name || ''} size="md" />
             </Menu.Trigger>
-            <Menu.Content>
-              <Menu.Item value="perfil">
-                <FiUser />
-                Perfil
-              </Menu.Item>
-              <Menu.Item value="sair" onClick={handleLogout}>
-                <FiLogOut />
-                Sair
-              </Menu.Item>
-            </Menu.Content>
+
+            <Menu.Positioner>
+              <Menu.Content>
+                <Menu.Item value="perfil">
+                  <FiUser />
+                  Perfil
+                </Menu.Item>
+                <Menu.Item value="sair" onClick={handleLogout}>
+                  <FiLogOut />
+                  Sair
+                </Menu.Item>
+              </Menu.Content>
+            </Menu.Positioner>
           </Menu.Root>
         </HStack>
       </Flex>

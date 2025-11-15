@@ -9,6 +9,7 @@ import {
 } from '@chakra-ui/react';
 import { FiEye, FiMessageSquare } from 'react-icons/fi';
 import { Card } from '../components/Card';
+import { EmptyState } from '../components/ui/empty-state';
 
 const mockMessages = [
   {
@@ -79,7 +80,14 @@ export const Messages: React.FC = () => {
 
         <Card>
           <VStack gap={4} align="stretch">
-            {mockMessages.map((message) => (
+            {mockMessages.length === 0 ? (
+              <EmptyState
+                title="Nenhuma mensagem encontrada"
+                description="Quando seus clientes enviarem mensagens, elas aparecerão aqui"
+                icon={<FiMessageSquare size={48} color="#9ca3af" />}
+              />
+            ) : (
+              mockMessages.map((message) => (
               <Box key={message.id} p={4} border="1px" borderColor="gray.200" borderRadius="md">
                 <HStack justify="space-between" align="start">
                   <VStack align="start" gap={2}>
@@ -106,7 +114,8 @@ export const Messages: React.FC = () => {
                   </VStack>
                 </HStack>
               </Box>
-            ))}
+              ))
+            )}
           </VStack>
         </Card>
 

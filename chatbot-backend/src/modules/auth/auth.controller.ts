@@ -12,18 +12,18 @@ export class AuthController {
 
   register = async (req: Request, res: Response) => {
     try {
-      const { name, email, password }: RegisterData = req.body;
+      const { name, email, password, phone }: RegisterData = req.body;
 
       // Validações básicas
-      if (!name || !email || !password) {
-        return errorResponse(res, 'Nome, email e senha são obrigatórios', 400);
+      if (!name || !email || !password || !phone) {
+        return errorResponse(res, 'Nome, email, telefone e senha são obrigatórios', 400);
       }
 
       if (password.length < 6) {
         return errorResponse(res, 'Senha deve ter pelo menos 6 caracteres', 400);
       }
 
-      const result = await this.authService.register({ name, email, password });
+      const result = await this.authService.register({ name, email, password, phone });
       return successResponse(res, 'Usuário criado com sucesso', result, 201);
     } catch (error: any) {
       return errorResponse(res, error.message, 400);

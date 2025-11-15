@@ -82,7 +82,7 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
         <HStack justify="space-between" mb={8}>
           {!isCollapsed && (
             <Text fontSize="h3" fontWeight="h3" color="primaryButton">
-              Botatende
+              Chatbot
             </Text>
           )}
           <IconButton
