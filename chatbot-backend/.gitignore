@@ -12,6 +12,7 @@ node_modules
 dist
 dist-ssr
 *.local
+/tokens
 
 # Editor directories and files
 .vscode/*
