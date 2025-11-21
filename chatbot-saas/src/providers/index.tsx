@@ -5,6 +5,7 @@ import { CompanyProvider } from './company-provider';
 import { ChatbotProvider } from './chatbot-provider';
 import { AnalyticsProvider } from './analytics-provider';
 import { PlansProvider } from './plans-provider';
+import { WhatsAppProvider } from './whatsapp-provider';
 
 // Provider para páginas que não precisam de companyId
 export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -12,7 +13,9 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <ApiProvider>
       <AuthProvider>
         <PlansProvider>
-          {children}
+          <WhatsAppProvider>
+            {children}
+          </WhatsAppProvider>
         </PlansProvider>
       </AuthProvider>
     </ApiProvider>
@@ -27,16 +30,17 @@ export const CompanyAppProvider: React.FC<{
   return (
     <ApiProvider>
       <AuthProvider>
-        <CompanyProvider>
-          <PlansProvider> 
-
-          <ChatbotProvider companyId={companyId}>
-            <AnalyticsProvider companyId={companyId}>
-              {children}
-            </AnalyticsProvider>
-          </ChatbotProvider>
-          </PlansProvider>
-        </CompanyProvider>
+        <PlansProvider>
+          <WhatsAppProvider>
+            <CompanyProvider>
+              <ChatbotProvider companyId={companyId}>
+                <AnalyticsProvider companyId={companyId}>
+                  {children}
+                </AnalyticsProvider>
+              </ChatbotProvider>
+            </CompanyProvider>
+          </WhatsAppProvider>
+        </PlansProvider>
       </AuthProvider>
     </ApiProvider>
   );
@@ -49,6 +53,7 @@ export { CompanyProvider } from './company-provider';
 export { ChatbotProvider } from './chatbot-provider';
 export { AnalyticsProvider } from './analytics-provider';
 export { PlansProvider } from './plans-provider';
+export { WhatsAppProvider } from './whatsapp-provider';
 
 // Exportar todos os hooks
 export { useApi } from '../hooks/use-api';
@@ -57,3 +62,4 @@ export { useCompany, useProducts } from '../hooks/useCompany';
 export { useChatbot, useChat } from '../hooks/useChatbot';
 export { useAnalytics, useMetrics } from '../hooks/useAnalytics';
 export { usePlans } from '../hooks/usePlans';
+export { useWhatsApp } from '../hooks/useWhatsApp';

@@ -20,6 +20,9 @@ import { useApi } from '../hooks/use-api';
 import { phoneMask } from '../utils/masks';
 import { CreateProductData } from '../types/company.types';
 import { AITrainingAidMessage } from '../components/company/AI-training-aid-message';
+import { WhatsAppConnection } from '../components/company/WhatsAppConnection';
+import { useWhatsApp } from '../providers';
+import { FiSend } from 'react-icons/fi';
 
 
 export const Company: React.FC = () => {
@@ -35,6 +38,12 @@ export const Company: React.FC = () => {
   } = useCompany();
   const { showSuccess, showError } = useToast();
   const { api } = useApi();
+  const { 
+    sendMessage, 
+    currentSession, 
+    isLoading: isWhatsAppLoading,
+    getSessionStatus
+  } = useWhatsApp();
   
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
@@ -42,6 +51,11 @@ export const Company: React.FC = () => {
   const [isTrained, setIsTrained] = useState(false);
   const [isTraining, setIsTraining] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  
+  // Estados para teste de envio de mensagem
+  const [testPhoneNumber, setTestPhoneNumber] = useState('');
+  const [testMessage, setTestMessage] = useState('');
+  const [isSendingTest, setIsSendingTest] = useState(false);
 
   // Carregar dados da empresa quando o componente montar
   useEffect(() => {
@@ -51,6 +65,32 @@ export const Company: React.FC = () => {
       setWhatsappNumber(company.whatsappNumber || '');
     }
   }, [company]);
+
+  // Verificar status do WhatsApp quando o componente montar ou quando company mudar
+  useEffect(() => {
+    const checkWhatsAppStatus = async () => {
+      if (!company?.id) return;
+
+      const sessionName = `company_${company.id}`;
+      
+      // Sempre verificar o status no backend para garantir que está atualizado
+      // Isso vai restaurar a sessão no estado se ela existir no backend
+      try {
+        await getSessionStatus(sessionName);
+      } catch (err) {
+        // Se der erro, a sessão não existe ou foi desconectada
+        // O getSessionStatus já limpa o estado automaticamente
+      }
+    };
+
+    // Aguardar um pouco antes de verificar para evitar múltiplas chamadas
+    const timeoutId = setTimeout(() => {
+      checkWhatsAppStatus();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [company?.id]);
 
   const handleAddProduct = async (productData: CreateProductData) => {
     if (!company) return;
@@ -122,6 +162,45 @@ export const Company: React.FC = () => {
       });
     } finally {
       setIsTraining(false);
+    }
+  };
+
+  const handleSendTestMessage = async () => {
+    if (!currentSession?.sessionName) {
+      showError('Conecte o WhatsApp primeiro antes de enviar mensagens de teste', {
+        title: 'WhatsApp não conectado'
+      });
+      return;
+    }
+
+    if (!testPhoneNumber || !testMessage) {
+      showError('Preencha o número de telefone e a mensagem', {
+        title: 'Campos obrigatórios'
+      });
+      return;
+    }
+
+    try {
+      setIsSendingTest(true);
+      
+      await sendMessage({
+        sessionName: currentSession.sessionName,
+        phoneNumber: testPhoneNumber,
+        message: testMessage
+      });
+
+      showSuccess('Mensagem de teste enviada com sucesso!', {
+        title: 'Mensagem enviada'
+      });
+      
+      // Limpar campos após envio
+      setTestMessage('');
+    } catch (err: any) {
+      showError(err.message || 'Erro ao enviar mensagem de teste', {
+        title: 'Erro ao enviar'
+      });
+    } finally {
+      setIsSendingTest(false);
     }
   };
 
@@ -327,6 +406,80 @@ export const Company: React.FC = () => {
                     description="Adicione produtos ou serviços para treinar o chatbot"
                     icon={<FiPlus size={32} color="#9ca3af" />}
                   />
+                )}
+              </VStack>
+            </Box>
+
+            <Box h="1px" bg="gray.200" />
+
+            <WhatsAppConnection />
+
+            <Box h="1px" bg="gray.200" />
+
+            <Box>
+              <Text fontSize="lg" fontWeight="semibold" mb={4}>
+                Teste de Envio de Mensagem
+              </Text>
+              <Text fontSize="sm" color="gray.600" mb={4}>
+                Envie uma mensagem de teste para verificar se o WhatsApp está funcionando corretamente
+              </Text>
+              
+              <VStack gap={4} align="stretch">
+                <Box>
+                  <Text mb={2} fontWeight="medium" fontSize="sm">
+                    Número de Telefone
+                  </Text>
+                  <Input
+                    placeholder="11999999999 ou 5511999999999"
+                    value={testPhoneNumber}
+                    onChange={(e) => setTestPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                    size="lg"
+                    disabled={isSendingTest || isWhatsAppLoading || !currentSession?.isConnected}
+                  />
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Digite apenas números (ex: 11999999999)
+                  </Text>
+                </Box>
+
+                <Box>
+                  <Text mb={2} fontWeight="medium" fontSize="sm">
+                    Mensagem
+                  </Text>
+                  <Textarea
+                    placeholder="Digite sua mensagem de teste aqui..."
+                    value={testMessage}
+                    onChange={(e) => setTestMessage(e.target.value)}
+                    rows={4}
+                    resize="vertical"
+                    disabled={isSendingTest || isWhatsAppLoading || !currentSession?.isConnected}
+                  />
+                </Box>
+
+                <Button
+                  onClick={handleSendTestMessage}
+                  colorScheme="blue"
+                  size="lg"
+                  loading={isSendingTest}
+                  disabled={!currentSession?.isConnected || !testPhoneNumber || !testMessage || isSendingTest || isWhatsAppLoading}
+                >
+                  <HStack gap={2}>
+                    <FiSend />
+                    <Text>Enviar Mensagem de Teste</Text>
+                  </HStack>
+                </Button>
+
+                {!currentSession?.isConnected && (
+                  <Box
+                    p={3}
+                    bg="orange.50"
+                    border="1px"
+                    borderColor="orange.200"
+                    borderRadius="md"
+                  >
+                    <Text fontSize="sm" color="orange.700">
+                      ⚠️ Conecte o WhatsApp acima antes de enviar mensagens de teste
+                    </Text>
+                  </Box>
                 )}
               </VStack>
             </Box>
