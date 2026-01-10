@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { PlanContext } from '../context/plan-context';
 import { PlanContextType, UserPlan, Plan, CreatePlanData } from '../types/plan.types';
 import { useApi } from '../hooks/use-api';
+import { useToast } from '../hooks/useToast';
 
 export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
   children
@@ -13,6 +14,7 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { api } = useApi();
+  const { showSuccess } = useToast();
 
   const clearError = (): void => setError(null);
 
@@ -70,6 +72,7 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
         setCurrentPlan(updatedPlan);
         // Recarregar planos e plano atual para garantir sincronização
         await Promise.all([getAllPlans(), getUserPlan()]);
+        showSuccess(response.data.message || 'Plano atribuído com sucesso');
         return updatedPlan;
       } else {
         throw new Error(response.data?.message || 'Erro ao atribuir plano');

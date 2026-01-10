@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   VStack,
@@ -15,7 +15,8 @@ import { Plan } from '../types/plan.types';
 import { usePlans } from '../providers';
 
 export const Plans: React.FC = () => {
-  const { getAllPlans, allPlans, assignPlan, isLoading, currentPlan, getUserPlan } = usePlans();
+  const { getAllPlans, allPlans, assignPlan, currentPlan, getUserPlan } = usePlans();
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     getAllPlans();
@@ -24,11 +25,14 @@ export const Plans: React.FC = () => {
 
   const handleSubscribe = async (planId: string) => {
     try {
+      setLoadingPlanId(planId);
       await assignPlan(planId);
       // Plano atribuído com sucesso - getUserPlan será chamado automaticamente pelo provider
     } catch (error) {
       console.error('Erro ao atribuir plano:', error);
       // Tratar erro - pode mostrar toast/notificação aqui
+    } finally {
+      setLoadingPlanId(null);
     }
   };
 
@@ -138,8 +142,8 @@ export const Plans: React.FC = () => {
                     w="full"
                     variant={isActive ? 'solid' : plan.planType === 'PRO' ? 'solid' : 'outline'}
                     onClick={() => !isActive && handleSubscribe(plan.id)}
-                    loading={isLoading}
-                    disabled={isLoading || isActive}
+                    loading={loadingPlanId === plan.id}
+                    disabled={loadingPlanId !== null || isActive}
                   >
                     {isActive ? (
                       <>

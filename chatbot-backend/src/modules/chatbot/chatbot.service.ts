@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { trainAIWithCompanyData, generateAIResponse, TrainingData } from '../../utils/trainAI';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 const prisma = new PrismaClient();
+const analyticsService = new AnalyticsService();
 
 export interface ChatMessage {
   message: string;
@@ -73,6 +75,10 @@ export class ChatbotService {
         companyId
       }
     });
+
+    // Atualizar analytics de forma assíncrona (não bloquear a resposta)
+    analyticsService.calculateAndStoreDailyAnalytics(companyId, new Date())
+      .catch(err => console.error('Erro ao atualizar analytics:', err));
 
     return aiResponse;
   }

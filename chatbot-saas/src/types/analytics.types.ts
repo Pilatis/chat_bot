@@ -11,6 +11,7 @@ export interface AnalyticsOverview {
   peakHours: Array<{ hour: number; count: number }>;
   mostMentionedProduct?: string;
   averageResponseTime?: number;
+  responseRate?: number;
   userEngagement: {
     totalUsers: number;
     activeUsers: number;
@@ -62,10 +63,10 @@ export interface AnalyticsState {
 }
 
 export interface AnalyticsContextType extends AnalyticsState {
-  getOverview: () => Promise<void>;
-  getHourlyDistribution: () => Promise<void>;
-  getTopKeywords: (limit?: number) => Promise<void>;
-  getDashboardData: () => Promise<void>;
+  getOverview: (period?: string) => Promise<void>;
+  getHourlyDistribution: (period?: string) => Promise<void>;
+  getTopKeywords: (limit?: number, period?: string) => Promise<void>;
+  getDashboardData: (period?: string) => Promise<void>;
   getMessagesByTimeRange: (startDate: string, endDate: string) => Promise<MessagesByTimeRange>;
   clearError: () => void;
 }

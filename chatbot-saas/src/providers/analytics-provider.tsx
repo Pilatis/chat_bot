@@ -22,12 +22,12 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
 
   const clearError = (): void => setError(null);
 
-  const getOverview = async (): Promise<void> => {
+  const getOverview = async (period: string = '7'): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.get(`/analytics/${companyId}/overview`);
+      const response = await api.get(`/analytics/${companyId}/overview?period=${period}`);
       
       if (response.data?.success && response.data?.data) {
         setOverview(response.data.data);
@@ -41,12 +41,12 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
     }
   };
 
-  const getHourlyDistribution = async (): Promise<void> => {
+  const getHourlyDistribution = async (period: string = '7'): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.get(`/analytics/${companyId}/hourly-distribution`);
+      const response = await api.get(`/analytics/${companyId}/hourly-distribution?period=${period}`);
       
       if (response.data?.success && response.data?.data) {
         setHourlyDistribution(response.data.data);
@@ -60,12 +60,12 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
     }
   };
 
-  const getTopKeywords = async (limit: number = 10): Promise<void> => {
+  const getTopKeywords = async (limit: number = 10, period: string = '7'): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.get(`/analytics/${companyId}/top-keywords?limit=${limit}`);
+      const response = await api.get(`/analytics/${companyId}/top-keywords?limit=${limit}&period=${period}`);
       
       if (response.data?.success && response.data?.data) {
         setTopKeywords(response.data.data);
@@ -79,12 +79,12 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
     }
   };
 
-  const getDashboardData = async (): Promise<void> => {
+  const getDashboardData = async (period: string = '7'): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.get(`/analytics/${companyId}/dashboard`);
+      const response = await api.get(`/analytics/${companyId}/dashboard?period=${period}`);
       
       if (response.data?.success && response.data?.data) {
         const data = response.data.data;

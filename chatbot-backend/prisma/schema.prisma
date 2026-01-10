@@ -58,6 +58,7 @@ model Company {
   messages      Message[]
   trainingData  TrainingData[]
   subscriptions Subscription[]
+  analytics     Analytics[]
 
   @@map("companies")
 }
@@ -117,6 +118,46 @@ model Plan {
   userPlans     UserPlan[]
 
   @@map("plans")
+}
+
+model Analytics {
+  id                    String   @id @default(uuid())
+  companyId             String
+  date                  DateTime @default(now())
+  
+  // Métricas de Volume
+  totalMessages         Int      @default(0)
+  clientMessages        Int      @default(0)
+  botMessages           Int      @default(0)
+  
+  // Taxa de Resposta
+  responseRate          Float?   // Percentual de mensagens do bot em relação às do cliente
+  
+  // Tempo Médio de Resposta
+  averageResponseTime   Float?   // Em segundos
+  
+  // Distribuição de Respostas
+  automaticResponses   Int      @default(0) // Respostas automáticas do bot
+  manualResponses      Int      @default(0) // Respostas manuais (se houver)
+  
+  // Mensagens por Horário (JSON para armazenar distribuição por hora 0-23)
+  hourlyDistribution   Json?    // { "0": { "client": 0, "bot": 0, "total": 0 }, ... }
+  
+  // Palavras Mais Frequentes (JSON para armazenar top keywords)
+  topKeywords          Json?    // [{ "keyword": "preço", "count": 45 }, ...]
+  
+  // Volume por Dia (para histórico)
+  dailyVolume          Json?    // Para armazenar histórico de volumes diários
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  // Relations
+  company              Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@unique([companyId, date])
+  @@index([companyId, date])
+  @@map("analytics")
 }
 
 model Subscription {

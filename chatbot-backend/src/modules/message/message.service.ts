@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 // Definir enum localmente
 enum MessageFrom {
@@ -7,6 +8,7 @@ enum MessageFrom {
 }
 
 const prisma = new PrismaClient();
+const analyticsService = new AnalyticsService();
 
 export interface CreateMessageData {
   from: MessageFrom;
@@ -38,6 +40,10 @@ export class MessageService {
         companyId
       }
     });
+
+    // Atualizar analytics de forma assíncrona (não bloquear a resposta)
+    analyticsService.calculateAndStoreDailyAnalytics(companyId, new Date())
+      .catch(err => console.error('Erro ao atualizar analytics:', err));
 
     return message;
   }
