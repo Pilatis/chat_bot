@@ -23,6 +23,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
   const clearError = (): void => setError(null);
 
   const getOverview = async (period: string = '7'): Promise<void> => {
+    if (!companyId) return;
     try {
       setIsLoading(true);
       setError(null);
@@ -80,6 +81,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
   };
 
   const getDashboardData = async (period: string = '7'): Promise<void> => {
+    if (!companyId) return;
     try {
       setIsLoading(true);
       setError(null);

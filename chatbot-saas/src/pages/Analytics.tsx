@@ -25,6 +25,7 @@ import {
 } from 'recharts';
 import { Card } from '../components/Card';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { CustomSelect } from '../components/ui/select';
 
 const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -61,9 +62,6 @@ export const Analytics: React.FC = () => {
     getDashboardData(selectedPeriod);
   }, [selectedPeriod]);
 
-  const handlePeriodChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedPeriod(event.target.value);
-  };
 
   // Preparar dados para o gráfico de volume por dia (últimos 7 dias)
   const messagesData = useMemo(() => {
@@ -160,23 +158,18 @@ export const Analytics: React.FC = () => {
               </Text>
             </Box>
             <Box>
-              <select
+              <CustomSelect
                 value={selectedPeriod}
-                onChange={handlePeriodChange}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid #e2e8f0',
-                  backgroundColor: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                }}
-              >
-                <option value="today">Hoje</option>
-                <option value="7">Últimos 7 dias</option>
-                <option value="14">Últimos 14 dias</option>
-                <option value="30">Últimos 30 dias</option>
-              </select>
+                onChange={setSelectedPeriod}
+                options={[
+                  { value: 'today', label: 'Hoje' },
+                  { value: '7', label: 'Últimos 7 dias' },
+                  { value: '14', label: 'Últimos 14 dias' },
+                  { value: '30', label: 'Últimos 30 dias' },
+                ]}
+                size="sm"
+                width="180px"
+              />
             </Box>
           </HStack>
         </Box>
