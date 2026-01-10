@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   VStack,
@@ -31,13 +31,23 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   loading = false
 }) => {
   const [inputValue, setInputValue] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const bgUser = 'primaryButton';
   const bgBot = 'grayInput';
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSend = () => {
     if (inputValue.trim() && onSendMessage) {
       onSendMessage(inputValue.trim());
       setInputValue('');
+      setTimeout(() => scrollToBottom(), 100);
     }
   };
 
@@ -81,6 +91,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
                 
                 <Box
                   maxW="70%"
+                  minW="6.5%"
                   p={3}
                   borderRadius="lg"
                   bg={message.isFromBot ? bgBot : bgUser}
@@ -92,7 +103,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
                     color={message.isFromBot ? 'grayBold' : 'white'}
                     mt={1}
                   >
-                    {message.timestamp.toLocaleTimeString()}
+                    {message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                   </Text>
                 </Box>
                 
@@ -105,6 +116,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
               </HStack>
             ))
           )}
+          <div ref={messagesEndRef} />
         </VStack>
       </Box>
       
