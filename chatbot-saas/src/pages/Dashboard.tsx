@@ -38,8 +38,8 @@ export const Dashboard: React.FC = () => {
             <Card>
               <VStack align="start" gap={2}>
                 <Text fontSize="small" color="grayBold">Total de Mensagens</Text>
-                <Text fontSize="h2" fontWeight="h2" color="primaryButton">1,234</Text>
-                <Text fontSize="small" color="primary.100">+12% vs mês anterior</Text>
+                <Text fontSize="h2" fontWeight="h2" color="indigo.500">1,234</Text>
+                <Text fontSize="small" color="indigo.600">+12% vs mês anterior</Text>
               </VStack>
             </Card>
           </GridItem>
@@ -48,8 +48,8 @@ export const Dashboard: React.FC = () => {
             <Card>
               <VStack align="start" gap={2}>
                 <Text fontSize="small" color="grayBold">Atendimentos</Text>
-                <Text fontSize="h2" fontWeight="h2" color="primaryButton">456</Text>
-                <Text fontSize="small" color="primary.100">+8% vs mês anterior</Text>
+                <Text fontSize="h2" fontWeight="h2" color="indigo.500">456</Text>
+                <Text fontSize="small" color="indigo.600">+8% vs mês anterior</Text>
               </VStack>
             </Card>
           </GridItem>
@@ -58,8 +58,8 @@ export const Dashboard: React.FC = () => {
             <Card>
               <VStack align="start" gap={2}>
                 <Text fontSize="small" color="grayBold">Taxa de Resposta</Text>
-                <Text fontSize="h2" fontWeight="h2" color="primaryButton">94%</Text>
-                <Text fontSize="small" color="primary.100">+3% vs mês anterior</Text>
+                <Text fontSize="h2" fontWeight="h2" color="indigo.500">94%</Text>
+                <Text fontSize="small" color="indigo.600">+3% vs mês anterior</Text>
               </VStack>
             </Card>
           </GridItem>
@@ -68,7 +68,7 @@ export const Dashboard: React.FC = () => {
             <Card>
               <VStack align="start" gap={2}>
                 <Text fontSize="small" color="grayBold">Horário de Pico</Text>
-                <Text fontSize="h2" fontWeight="h2" color="primaryButton">14:30</Text>
+                <Text fontSize="h2" fontWeight="h2" color="indigo.500">14:30</Text>
                 <Text fontSize="small" color="grayBold">-2h vs semana anterior</Text>
               </VStack>
             </Card>
@@ -92,7 +92,7 @@ export const Dashboard: React.FC = () => {
                       <Line 
                         type="monotone" 
                         dataKey="messages" 
-                        stroke="#2563eb" 
+                        stroke="#6366F1" 
                         strokeWidth={2}
                       />
                     </LineChart>
@@ -132,8 +132,8 @@ export const Dashboard: React.FC = () => {
                     Status do Bot
                   </Text>
                   <HStack>
-                    <Box w={3} h={3} bg="green.500" rounded="full" />
-                    <Text fontSize="small" color="primary.100">
+                    <Box w={3} h={3} bg="indigo.500" rounded="full" />
+                    <Text fontSize="small" color="indigo.600">
                       Online e funcionando
                     </Text>
                   </HStack>

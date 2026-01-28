@@ -59,8 +59,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           borderColor: 'gray.400',
         }}
         _focus={{
-          borderColor: 'primaryButton',
-          boxShadow: '0 0 0 1px var(--chakra-colors-primaryButton)',
+          borderColor: 'indigo.500',
+          boxShadow: '0 0 0 1px var(--chakra-colors-indigo-500)',
         }}
         _disabled={{
           opacity: 0.6,
@@ -103,12 +103,12 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 px={size === 'sm' ? 3 : size === 'md' ? 4 : 5}
                 py={size === 'sm' ? 1.5 : size === 'md' ? 2 : 2.5}
                 _highlighted={{
-                  bg: 'grayInput',
-                  color: 'primaryButton',
+                  bg: 'indigo.50',
+                  color: 'indigo.600',
                 }}
                 _selected={{
-                  bg: 'grayInput',
-                  color: 'primaryButton',
+                  bg: 'indigo.50',
+                  color: 'indigo.600',
                   fontWeight: 'semibold',
                 }}
                 _hover={{

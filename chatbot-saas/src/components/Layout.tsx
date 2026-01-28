@@ -16,7 +16,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <Box minH="100vh" bg="gray.50" display="flex">
+    <Box minH="100vh" bg="whiteLight" display="flex">
       <Box
         position="fixed"
         top={0}

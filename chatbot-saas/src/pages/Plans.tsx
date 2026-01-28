@@ -62,7 +62,7 @@ export const Plans: React.FC = () => {
                   position="relative"
                   bg={isActive ? 'green.50' : plan.planType === 'PRO' ? 'blue.50' : 'white'}
                   border={isActive ? '2px' : plan.planType === 'PRO' ? '2px' : '1px'}
-                  borderColor={isActive ? 'green.500' : plan.planType === 'PRO' ? 'blue.500' : 'gray.200'}
+                  borderColor={isActive ? 'indigo.500' : plan.planType === 'PRO' ? 'indigo.500' : 'gray.200'}
                   transform={plan.planType === 'PRO' || isActive ? 'scale(1.05)' : 'scale(1)'}
                   transition="all 0.2s"
                 >
@@ -109,7 +109,7 @@ export const Plans: React.FC = () => {
                       {plan.name}
                     </Text>
                     <HStack justify="center" align="baseline" mt={2}>
-                      <Text fontSize="4xl" fontWeight="bold" color="blue.600">
+                      <Text fontSize="4xl" fontWeight="bold" color="indigo.600">
                         R$ {plan.price}
                       </Text>
                       {plan.price > 0 && (
@@ -137,7 +137,7 @@ export const Plans: React.FC = () => {
                   </VStack>
 
                   <Button
-                    colorScheme={isActive ? 'green' : plan.planType === 'PRO' ? 'blue' : 'gray'}
+                    colorScheme={isActive ? 'indigo' : plan.planType === 'PRO' ? 'indigo' : 'gray'}
                     size="lg"
                     w="full"
                     variant={isActive ? 'solid' : plan.planType === 'PRO' ? 'solid' : 'outline'}

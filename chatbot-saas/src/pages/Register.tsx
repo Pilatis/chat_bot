@@ -70,7 +70,7 @@ export const Register: React.FC = () => {
       >
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
-            <Text fontSize="h1" fontWeight="h1" color="primaryButton">
+            <Text fontSize="h1" fontWeight="h1" color="indigo.500">
               Chatbot
             </Text>
             <Text fontSize="h6" color="grayBold">
@@ -181,13 +181,13 @@ export const Register: React.FC = () => {
 
                     <Button
                       type="submit"
-                      bg="primaryButton"
+                      bg="indigo.500"
                       color="white"
                       size="lg"
                       w="full"
                       loading={isLoading || isSubmitting}
                       loadingText="Criando conta..."
-                      _hover={{ bg: 'baseOrange' }}
+                      _hover={{ bg: 'indigo.600' }}
                     >
                       Criar conta
                     </Button>
@@ -199,7 +199,7 @@ export const Register: React.FC = () => {
 
           <HStack>
             <Text color="grayBold">Já tem uma conta?</Text>
-            <Link as={RouterLink} href="/login" color="primaryButton">
+            <Link as={RouterLink} href="/login" color="indigo.500" _hover={{ color: 'indigo.600' }}>
               Faça login
             </Link>
           </HStack>

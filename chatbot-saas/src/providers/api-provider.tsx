@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { ApiContext } from '../context/api.context';
 import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { ApiContextType } from '../types/api.types';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useToast } from '../hooks/useToast';
 
 // Tipos para as respostas da API
 interface ApiResponse<T = any> {
@@ -17,6 +19,76 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { showError } = useToast();
+
+  const lastServerDownToastAtRef = useRef<number>(0);
+
+  const serverUnavailablePath = '/server-unavailable';
+
+  const isServerUnavailableError = useCallback((axiosError: AxiosError | any): boolean => {
+    const status = axiosError?.response?.status as number | undefined;
+    if (status && [502, 503, 504].includes(status)) return true;
+
+    // Sem response geralmente é falha de rede/servidor fora
+    const hasResponse = !!axiosError?.response;
+    if (hasResponse) return false;
+
+    const code = String(axiosError?.code ?? '');
+    const message = String(axiosError?.message ?? '');
+
+    // Axios/browser variam bastante:
+    // - axios: "Network Error" / code "ERR_NETWORK"
+    // - fetch: "Failed to fetch"
+    // - Chrome DevTools: net::ERR_CONNECTION_REFUSED (às vezes aparece no message)
+    const networkSignals = [
+      'Network Error',
+      'Failed to fetch',
+      'ERR_CONNECTION_REFUSED',
+      'ERR_CONNECTION_TIMED_OUT',
+      'ERR_INTERNET_DISCONNECTED',
+      'ERR_NAME_NOT_RESOLVED',
+      'ECONNREFUSED',
+      'ENOTFOUND',
+      'ETIMEDOUT'
+    ];
+
+    const codeSignals = ['ERR_NETWORK', 'ECONNABORTED'];
+
+    return (
+      codeSignals.includes(code) ||
+      networkSignals.some((s) => message.includes(s))
+    );
+  }, []);
+
+  const handleServerUnavailable = useCallback((axiosError: AxiosError | any) => {
+    try {
+      const now = Date.now();
+      if (now - lastServerDownToastAtRef.current > 5000) {
+        lastServerDownToastAtRef.current = now;
+        showError('Não foi possível conectar ao servidor. Tente novamente em instantes.', {
+          title: 'Servidor indisponível'
+        });
+      }
+
+      const returnTo = `${location.pathname}${location.search || ''}`;
+      if (returnTo && returnTo !== serverUnavailablePath) {
+        sessionStorage.setItem('serverUnavailableReturnTo', returnTo);
+      }
+
+      const code = String(axiosError?.code ?? '');
+      const message = String(axiosError?.message ?? '');
+      sessionStorage.setItem('serverUnavailableLastError', JSON.stringify({ code, message }));
+    } catch {
+    }
+
+    if (location.pathname !== serverUnavailablePath) {
+      navigate(serverUnavailablePath, {
+        state: { from: `${location.pathname}${location.search || ''}` }
+      });
+    }
+  }, [location.pathname, location.search, navigate, showError]);
   
   const apiClient: AxiosInstance = axios.create({
     baseURL: apiBaseUrl,
@@ -34,7 +106,6 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   });
 
-  // Adicionar interceptor para incluir automaticamente o token de acesso
   apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
@@ -98,6 +169,11 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       const axiosError = error as AxiosError;
 
+      if (isServerUnavailableError(axiosError)) {
+        handleServerUnavailable(axiosError);
+        return { errors: 'Servidor indisponível', status: 0 };
+      }
+
       // Se for erro 401, tenta refresh token
       if (axiosError.response?.status === 401) {
         try {
@@ -122,7 +198,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         status: axiosError.response?.status || 500
       };
     }
-  }, [apiClient]);
+  }, [apiClient, handleServerUnavailable, isServerUnavailableError]);
 
   const post = useCallback(async <T = any>(path: string, params?: any): Promise<ApiResponse<T>> => {
     try {
@@ -135,6 +211,11 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
       };
     } catch (error) {
       const axiosError = error as AxiosError;
+
+      if (isServerUnavailableError(axiosError)) {
+        handleServerUnavailable(axiosError);
+        return { errors: 'Servidor indisponível', status: 0 };
+      }
 
       // Se for erro 401, tenta refresh token
       if (axiosError.response?.status === 401) {
@@ -159,7 +240,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         status: axiosError.response?.status || 500
       };
     }
-  }, [apiClient]);
+  }, [apiClient, handleServerUnavailable, isServerUnavailableError]);
 
   const put = useCallback(
     async <T = any>(path: string, params?: any): Promise<ApiResponse<T>> => {
@@ -173,6 +254,11 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         };
       } catch (error) {
         const axiosError = error as AxiosError;
+
+        if (isServerUnavailableError(axiosError)) {
+          handleServerUnavailable(axiosError);
+          return { errors: 'Servidor indisponível', status: 0 };
+        }
 
         // Se for erro 401, tenta refresh token
         if (axiosError.response?.status === 401) {
@@ -197,7 +283,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
           status: axiosError.response?.status || 500
         };
       }
-    }, [apiClient]);
+    }, [apiClient, handleServerUnavailable, isServerUnavailableError]);
 
   const deleted = useCallback(
     async <T = any>(path: string, params?: any): Promise<ApiResponse<T>> => {
@@ -211,6 +297,11 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         };
       } catch (error) {
         const axiosError = error as AxiosError;
+
+        if (isServerUnavailableError(axiosError)) {
+          handleServerUnavailable(axiosError);
+          return { errors: 'Servidor indisponível', status: 0 };
+        }
 
         // Se for erro 401, tenta refresh token
         if (axiosError.response?.status === 401) {
@@ -235,11 +326,11 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
           status: axiosError.response?.status || 500
         };
       }
-    }, [apiClient]);
+    }, [apiClient, handleServerUnavailable, isServerUnavailableError]);
 
-  const contextValue: ApiContextType = {
+  const contextValue: ApiContextType = useMemo(() => ({
     api: { get, post, put, deleted, setHeader, setHeaderFile }
-  };
+  }), [deleted, get, post, put]);
   
   return <ApiContext.Provider value={contextValue}>{children}</ApiContext.Provider>;
 };

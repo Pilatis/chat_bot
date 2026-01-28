@@ -66,20 +66,16 @@ export const Company: React.FC = () => {
     }
   }, [company]);
 
-  // Verificar status do WhatsApp quando o componente montar ou quando company mudar
   useEffect(() => {
     const checkWhatsAppStatus = async () => {
       if (!company?.id) return;
 
       const sessionName = `company_${company.id}`;
       
-      // Sempre verificar o status no backend para garantir que está atualizado
-      // Isso vai restaurar a sessão no estado se ela existir no backend
       try {
         await getSessionStatus(sessionName);
       } catch (err) {
-        // Se der erro, a sessão não existe ou foi desconectada
-        // O getSessionStatus já limpa o estado automaticamente
+
       }
     };
 
@@ -328,7 +324,7 @@ export const Company: React.FC = () => {
                       size="xs"
                       variant="ghost"
                       color="gray.500"
-                      _hover={{ color: 'primaryButton', bg: 'gray.100' }}
+                      _hover={{ color: 'indigo.500', bg: 'gray.100' }}
                     >
                       <FiInfo />
                     </IconButton>
@@ -337,10 +333,10 @@ export const Company: React.FC = () => {
                 <Button
                   onClick={() => setIsAddProductModalOpen(true)}
                   size="sm"
-                  bg="primaryButton"
+                  bg="indigo.500"
                   color="white"
                   variant="outline"
-                  _hover={{ bg: 'baseOrange' }}
+                  _hover={{ bg: 'indigo.600' }}
                   loading={isProductLoading}
                   disabled={isProductLoading || isSaving}
                 >
@@ -489,10 +485,10 @@ export const Company: React.FC = () => {
             <HStack gap={4}>
               <Button
                 onClick={handleSave}
-                bg="primaryButton"
+                bg="indigo.500"
                 color="white"
                 size="lg"
-                _hover={{ bg: 'baseOrange' }}
+                _hover={{ bg: 'indigo.600' }}
                 loading={isSaving}
                 disabled={isSaving || isProductLoading}
               >

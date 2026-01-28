@@ -86,7 +86,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         w="full"
         bg="white"
         border="1px"
-        borderColor={isOpen ? 'primaryButton' : 'grayBorder'}
+        borderColor={isOpen ? 'indigo.500' : 'grayBorder'}
         borderRadius="md"
         cursor={disabled ? 'not-allowed' : 'pointer'}
         opacity={disabled ? 0.6 : 1}
@@ -96,8 +96,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         }}
         _focus={{
           outline: 'none',
-          borderColor: 'primaryButton',
-          boxShadow: '0 0 0 1px var(--chakra-colors-primaryButton)',
+          borderColor: 'indigo.500',
+          boxShadow: '0 0 0 1px var(--chakra-colors-indigo-500)',
         }}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
@@ -149,8 +149,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 px={currentSize.padding.split(' ')[1]}
                 py={currentSize.padding.split(' ')[0]}
                 textAlign="left"
-                bg={value === option.value ? 'grayInput' : 'transparent'}
-                color={value === option.value ? 'primaryButton' : 'defaultBlack'}
+                bg={value === option.value ? 'indigo.50' : 'transparent'}
+                color={value === option.value ? 'indigo.600' : 'defaultBlack'}
                 fontWeight={value === option.value ? 'semibold' : 'normal'}
                 fontSize={currentSize.fontSize}
                 cursor="pointer"

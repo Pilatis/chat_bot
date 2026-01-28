@@ -65,7 +65,7 @@ export const Loading: React.FC<LoadingProps> = ({
             as={FiLoader}
             width={12}
             height={12}
-            color="primaryButton"
+            color="indigo.500"
             style={{
               animation: 'loading-spin 2s linear infinite',
               display: 'block',

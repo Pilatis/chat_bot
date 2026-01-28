@@ -61,7 +61,7 @@ export const Login: React.FC = () => {
       >
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
-            <Text fontSize="h1" fontWeight="h1" color="primaryButton">
+            <Text fontSize="h1" fontWeight="h1" color="indigo.500">
               Chatbot
             </Text>
             <Text fontSize="h6" color="grayBold">
@@ -118,13 +118,13 @@ export const Login: React.FC = () => {
 
                     <Button
                       type="submit"
-                      bg="primaryButton"
+                      bg="indigo.500"
                       color="white"
                       size="lg"
                       w="full"
                       loading={isLoading || isSubmitting}
                       loadingText="Entrando..."
-                      _hover={{ bg: 'baseOrange' }}
+                      _hover={{ bg: 'indigo.600' }}
                     >
                       Entrar
                     </Button>
@@ -136,19 +136,21 @@ export const Login: React.FC = () => {
 
           <HStack>
             <Text color="grayBold">Ainda não tem conta?</Text>
-            <Link as={RouterLink} href="/register" color="primaryButton">
+            <Link as={RouterLink} href="/register" color="indigo.500" _hover={{ color: 'indigo.600' }}>
               Cadastre-se
             </Link>
           </HStack>
 
           <Box
             p={4}
-            bg="lightOrange"
+            bg="indigo.50"
             rounded="md"
             w="full"
             textAlign="center"
+            border="1px"
+            borderColor="indigo.200"
           >
-            <Text fontSize="small" color="primaryButton">
+            <Text fontSize="small" color="indigo.700">
               <strong>Demo:</strong> admin@botatende.com / 123456
             </Text>
           </Box>

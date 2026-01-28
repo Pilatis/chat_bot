@@ -27,7 +27,7 @@ import { Card } from '../components/Card';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { CustomSelect } from '../components/ui/select';
 
-const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+const COLORS = ['#6366F1', '#8B5CF6', '#10b981', '#6B7280', '#A78BFA'];
 
 // Função para formatar hora (0-23) para string (00:00)
 const formatHour = (hour: number): string => {
@@ -98,8 +98,8 @@ export const Analytics: React.FC = () => {
     const manual = total - automatic;
 
     return [
-      { name: 'Automáticas', value: automatic, color: '#2563eb' },
-      { name: 'Manuais', value: manual, color: '#10b981' },
+      { name: 'Automáticas', value: automatic, color: '#6366F1' },
+      { name: 'Manuais', value: manual, color: '#8B5CF6' },
     ];
   }, [overview]);
 
@@ -193,14 +193,14 @@ export const Analytics: React.FC = () => {
                         <Line
                           type="monotone"
                           dataKey="messages"
-                          stroke="#2563eb"
+                          stroke="#6366F1"
                           strokeWidth={2}
                           name="Mensagens Recebidas"
                         />
                         <Line
                           type="monotone"
                           dataKey="responses"
-                          stroke="#10b981"
+                          stroke="#8B5CF6"
                           strokeWidth={2}
                           name="Respostas Enviadas"
                         />
@@ -269,8 +269,8 @@ export const Analytics: React.FC = () => {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="client" fill="#2563eb" name="Cliente" />
-                        <Bar dataKey="bot" fill="#10b981" name="Bot" />
+                        <Bar dataKey="client" fill="#6366F1" name="Cliente" />
+                        <Bar dataKey="bot" fill="#8B5CF6" name="Bot" />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -347,7 +347,7 @@ export const Analytics: React.FC = () => {
                 <Text fontSize="lg" fontWeight="semibold">
                   Tempo Médio de Resposta
                 </Text>
-                <Text fontSize="3xl" fontWeight="bold" color="blue.500">
+                <Text fontSize="3xl" fontWeight="bold" color="indigo.500">
                   {formatResponseTime(overview?.averageResponseTime)}
                 </Text>
                 <Text fontSize="sm" color="gray.600">
@@ -365,7 +365,7 @@ export const Analytics: React.FC = () => {
                 <Text fontSize="lg" fontWeight="semibold">
                   Total de Mensagens
                 </Text>
-                <Text fontSize="3xl" fontWeight="bold" color="purple.500">
+                <Text fontSize="3xl" fontWeight="bold" color="purple.600">
                   {overview?.totalMessages || 0}
                 </Text>
                 <Text fontSize="sm" color="gray.600">

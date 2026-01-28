@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,14 +11,12 @@ model User {
   id        String    @id @default(uuid())
   name      String
   email     String    @unique
-  phone     String?   @unique
   password  String
-  role      UserRole  @default(CLIENT)
-  planType  PlanTypes @default(FREE)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-
-  // Relations
+  phone     String?   @unique
+  role      UserRole  @default(CLIENT)
+  planType  PlanTypes @default(FREE)
   companies Company[]
   userPlan  UserPlan?
 
@@ -29,51 +24,50 @@ model User {
 }
 
 model UserPlan {
-  id        String   @id @default(uuid())
-  userId    String   @unique
+  id        String    @id @default(uuid())
+  userId    String    @unique
   planId    String
   planType  PlanTypes
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan      Plan @relation(fields: [planId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  plan      Plan      @relation(fields: [planId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_plans")
 }
 
 model Company {
-  id            String   @id @default(uuid())
-  name          String
-  description   String?
-  whatsappNumber String?
-  ownerId       String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  products      Product[]
-  messages      Message[]
-  trainingData  TrainingData[]
-  subscriptions Subscription[]
-  analytics     Analytics[]
+  id                 String              @id @default(uuid())
+  name               String
+  description        String?
+  whatsappNumber     String?
+  ownerId            String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  analytics          Analytics[]
+  owner              User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  conversationCaches ConversationCache[]
+  conversations      Conversation[]
+  knowledgeBases     KnowledgeBase[]
+  knowledgeChunks    KnowledgeChunk[]
+  messageLogs        MessageLog[]
+  messages           Message[]
+  products           Product[]
+  subscriptions      Subscription[]
+  trainingData       TrainingData[]
 
   @@map("companies")
 }
 
 model Product {
-  id        String   @id @default(uuid())
-  name      String
+  id          String   @id @default(uuid())
+  name        String
   description String?
-  price     Float?
-  companyId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  price       Float?
+  companyId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("products")
 }
@@ -82,11 +76,9 @@ model Message {
   id        String      @id @default(uuid())
   from      MessageFrom
   content   String
-  companyId  String
+  companyId String
   createdAt DateTime    @default(now())
-
-  // Relations
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("messages")
 }
@@ -96,24 +88,20 @@ model TrainingData {
   companyId String
   data      Json
   trainedAt DateTime @default(now())
-
-  // Relations
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("training_data")
 }
 
 model Plan {
-  id            String     @id @default(uuid())
+  id            String         @id @default(uuid())
   name          String
-  planType      PlanTypes  @unique
   price         Float
   limitMessages Int
-  benefits      String[]   @default([])
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  // Relations
+  createdAt     DateTime       @default(now())
+  benefits      String[]       @default([])
+  planType      PlanTypes      @unique
+  updatedAt     DateTime       @updatedAt
   subscriptions Subscription[]
   userPlans     UserPlan[]
 
@@ -121,58 +109,156 @@ model Plan {
 }
 
 model Analytics {
-  id                    String   @id @default(uuid())
-  companyId             String
-  date                  DateTime @default(now())
-  
-  // Métricas de Volume
-  totalMessages         Int      @default(0)
-  clientMessages        Int      @default(0)
-  botMessages           Int      @default(0)
-  
-  // Taxa de Resposta
-  responseRate          Float?   // Percentual de mensagens do bot em relação às do cliente
-  
-  // Tempo Médio de Resposta
-  averageResponseTime   Float?   // Em segundos
-  
-  // Distribuição de Respostas
-  automaticResponses   Int      @default(0) // Respostas automáticas do bot
-  manualResponses      Int      @default(0) // Respostas manuais (se houver)
-  
-  // Mensagens por Horário (JSON para armazenar distribuição por hora 0-23)
-  hourlyDistribution   Json?    // { "0": { "client": 0, "bot": 0, "total": 0 }, ... }
-  
-  // Palavras Mais Frequentes (JSON para armazenar top keywords)
-  topKeywords          Json?    // [{ "keyword": "preço", "count": 45 }, ...]
-  
-  // Volume por Dia (para histórico)
-  dailyVolume          Json?    // Para armazenar histórico de volumes diários
-  
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  
-  // Relations
-  company              Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id                  String   @id @default(uuid())
+  companyId           String
+  date                DateTime @default(now())
+  totalMessages       Int      @default(0)
+  clientMessages      Int      @default(0)
+  botMessages         Int      @default(0)
+  responseRate        Float?
+  averageResponseTime Float?
+  automaticResponses  Int      @default(0)
+  manualResponses     Int      @default(0)
+  hourlyDistribution  Json?
+  topKeywords         Json?
+  dailyVolume         Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@unique([companyId, date])
   @@index([companyId, date])
   @@map("analytics")
 }
 
 model Subscription {
-  id        String           @id @default(uuid())
+  id        String             @id @default(uuid())
   companyId String
   planId    String
   status    SubscriptionStatus @default(ACTIVE)
-  startedAt DateTime         @default(now())
+  startedAt DateTime           @default(now())
   expiresAt DateTime?
-
-  // Relations
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  plan      Plan    @relation(fields: [planId], references: [id])
+  company   Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan      Plan               @relation(fields: [planId], references: [id])
 
   @@map("subscriptions")
+}
+
+model KnowledgeBase {
+  id        String            @id @default(uuid())
+  companyId String
+  title     String
+  category  KnowledgeCategory
+  content   String
+  metadata  Json?
+  isActive  Boolean           @default(true)
+  priority  Int               @default(0)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  chunks    KnowledgeChunk[]
+
+  @@index([companyId, isActive])
+  @@index([companyId, category])
+  @@map("knowledge_bases")
+}
+
+model KnowledgeChunk {
+  id              String        @id @default(uuid())
+  knowledgeBaseId String
+  companyId       String
+  content         String
+  embedding       Json?
+  chunkIndex      Int
+  tokenCount      Int?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  contentHash     String
+  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, knowledgeBaseId])
+  @@index([knowledgeBaseId, chunkIndex])
+  @@map("knowledge_chunks")
+}
+
+model Conversation {
+  id          String              @id @default(uuid())
+  companyId   String
+  clientPhone String?
+  clientName  String?
+  sessionId   String?
+  status      ConversationStatus  @default(ACTIVE)
+  startedAt   DateTime            @default(now())
+  endedAt     DateTime?
+  metadata    Json?
+  caches      ConversationCache[]
+  company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  messageLogs MessageLog[]
+
+  @@index([companyId, status])
+  @@index([companyId, startedAt])
+  @@index([clientPhone])
+  @@map("conversations")
+}
+
+model ConversationCache {
+  id              String        @id @default(uuid())
+  companyId       String
+  conversationId  String?
+  queryEmbedding  Json?
+  queryText       String?
+  response        String?
+  cacheType       CacheType
+  memoryType      MemoryType?
+  key             String?
+  value           String?
+  confidence      Float         @default(1.0)
+  similarityScore Float?
+  source          CacheSource
+  context         Json?
+  isActive        Boolean       @default(true)
+  hitCount        Int           @default(0)
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  conversation    Conversation? @relation(fields: [conversationId], references: [id])
+
+  @@index([companyId, cacheType, isActive])
+  @@index([companyId, source])
+  @@index([companyId, expiresAt])
+  @@index([conversationId])
+  @@index([queryText])
+  @@index([key])
+  @@map("conversation_caches")
+}
+
+model MessageLog {
+  id             String             @id @default(uuid())
+  companyId      String
+  conversationId String?
+  from           MessageFrom
+  content        String
+  contentType    MessageContentType @default(TEXT)
+  metadata       Json?
+  processingTime Float?
+  aiModel        String?
+  aiTokens       Int?
+  aiCost         Float?
+  source         MessageSource
+  createdAt      DateTime           @default(now())
+  company        Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  conversation   Conversation?      @relation(fields: [conversationId], references: [id])
+
+  @@index([companyId, createdAt])
+  @@index([conversationId, createdAt])
+  @@index([companyId, from])
+  @@index([source])
+  @@map("message_logs")
 }
 
 enum MessageFrom {
@@ -195,4 +281,66 @@ enum PlanTypes {
   FREE
   BASIC
   PRO
+}
+
+enum KnowledgeCategory {
+  PRODUCT
+  SERVICE
+  POLICY
+  FAQ
+  COMPANY_INFO
+  CUSTOM
+}
+
+enum CacheType {
+  CACHE
+  MEMORY
+  HYBRID
+}
+
+enum CacheSource {
+  RAG
+  MEMORY
+  AI
+  HYBRID
+}
+
+enum ConversationStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+  ARCHIVED
+}
+
+enum MemoryType {
+  PREFERENCE
+  CONTEXT
+  FACT
+  PATTERN
+  INTENT
+}
+
+enum MemorySource {
+  CONVERSATION
+  MANUAL
+  AI_INFERRED
+  SYSTEM
+}
+
+enum MessageContentType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  LOCATION
+  CONTACT
+}
+
+enum MessageSource {
+  WHATSAPP
+  WEB_CHAT
+  API
+  TEST
+  SYSTEM
 }

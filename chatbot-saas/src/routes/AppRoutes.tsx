@@ -12,6 +12,7 @@ import { Chatbot } from '../pages/Chatbot';
 import { Messages } from '../pages/Messages';
 import { Analytics } from '../pages/Analytics';
 import { Plans } from '../pages/Plans';
+import { ServerUnavailable } from '../pages/ServerUnavailable';
 import { CompanyProvider } from '../providers/company-provider';
 import { ChatbotProvider } from '../providers/chatbot-provider';
 import { AnalyticsProvider } from '../providers/analytics-provider';
@@ -101,6 +102,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
+      <Route path="/server-unavailable" element={<ServerUnavailable />} />
       <Route
         path="/login"
         element={

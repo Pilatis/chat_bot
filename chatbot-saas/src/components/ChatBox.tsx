@@ -32,8 +32,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const bgUser = 'primaryButton';
-  const bgBot = 'grayInput';
+  const bgUser = 'indigo.500';
+  const bgBot = 'gray.100';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,7 +83,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
                 gap={3}
               >
                 {message.isFromBot && (
-                  <Avatar.Root size="sm" bg="green.500">
+                  <Avatar.Root size="sm" bg="indigo.500">
                     <Avatar.Image src="" alt="Bot" />
                     <Avatar.Fallback>B</Avatar.Fallback>
                   </Avatar.Root>
@@ -95,12 +95,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
                   p={3}
                   borderRadius="lg"
                   bg={message.isFromBot ? bgBot : bgUser}
-                  color={message.isFromBot ? 'defaultBlack' : 'white'}
+                  color={message.isFromBot ? 'gray.700' : 'white'}
                 >
                   <Text fontSize="sm">{message.content}</Text>
                   <Text
                     fontSize="xs"
-                    color={message.isFromBot ? 'grayBold' : 'white'}
+                    color={message.isFromBot ? 'gray.500' : 'gray.200'}
                     mt={1}
                   >
                     {message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
@@ -108,7 +108,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
                 </Box>
                 
                 {!message.isFromBot && (
-                  <Avatar.Root size="sm" bg="blue.500">
+                  <Avatar.Root size="sm" bg="purple.500">
                     <Avatar.Image src="" alt="Você" />
                     <Avatar.Fallback>V</Avatar.Fallback>
                   </Avatar.Root>
@@ -120,7 +120,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
         </VStack>
       </Box>
       
-      <Box p={4} borderTop="1px" borderColor="gray.200">
+      <Box p={4} borderTop="1px" borderColor="grayBorder">
         <HStack gap={2}>
           <Input
             placeholder="Digite uma pergunta..."
@@ -134,8 +134,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
             onClick={handleSend}
             disabled={!inputValue.trim() || disabled}
             size="sm"
-            bg="primaryButton"
+            bg="indigo.500"
             color="white"
+            _hover={{ bg: 'indigo.600' }}
             loading={loading}
           >
             <FiSend />

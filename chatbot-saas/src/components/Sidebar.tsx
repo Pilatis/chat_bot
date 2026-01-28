@@ -43,11 +43,11 @@ const NavItem = ({ icon, children, to, onClose, isCollapsed }: NavItemProps) => 
         rounded="lg"
         role="group"
         cursor="pointer"
-        bg={isActive ? 'lightOrange' : 'transparent'}
-        color={isActive ? 'primaryButton' : 'grayBold'}
+        bg={isActive ? 'indigo.500' : 'transparent'}
+        color={isActive ? 'white' : 'gray.300'}
         _hover={{
-          bg: 'lightOrange',
-          color: 'primaryButton',
+          bg: isActive ? 'indigo.600' : 'gray.800',
+          color: isActive ? 'white' : 'indigo.400',
         }}
         transition="all 0.2s"
         justify={isCollapsed ? 'center' : 'flex-start'}
@@ -71,9 +71,9 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
     <Box
       w={isCollapsed ? "80px" : "250px"}
       h="full"
-      bg="black"
+      bg="gray.900"
       borderRight="1px"
-      borderColor="grayBorder"
+      borderColor="gray.800"
       py={6}
       px={isCollapsed ? 2 : 4}
       transition="all 0.3s ease"
@@ -81,7 +81,7 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
       <VStack gap={2} align="stretch">
         <HStack justify="space-between" mb={8}>
           {!isCollapsed && (
-            <Text fontSize="h3" fontWeight="h3" color="primaryButton">
+            <Text fontSize="h3" fontWeight="h3" color="indigo.400">
               Chatbot
             </Text>
           )}
@@ -89,9 +89,9 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
             aria-label="Toggle sidebar"
             size="sm"
             variant="ghost"
-            color="primaryButton"
+            color="gray.300"
             onClick={onToggle}
-            _hover={{ bg: 'lightOrange' }}
+            _hover={{ bg: 'gray.800', color: 'indigo.400' }}
           >
             {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
           </IconButton>

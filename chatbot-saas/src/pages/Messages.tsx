@@ -151,14 +151,14 @@ export const Messages: React.FC = () => {
                       alignSelf={msg.isFromBot ? 'flex-start' : 'flex-end'}
                       maxW="80%"
                       p={3}
-                      bg={msg.isFromBot ? 'gray.100' : 'blue.500'}
+                      bg={msg.isFromBot ? 'gray.100' : 'indigo.500'}
                       color={msg.isFromBot ? 'gray.800' : 'white'}
                       borderRadius="lg"
                     >
                       <Text fontSize="sm">{msg.content}</Text>
                       <Text
                         fontSize="xs"
-                        color={msg.isFromBot ? 'gray.500' : 'blue.100'}
+                        color={msg.isFromBot ? 'gray.500' : 'gray.200'}
                         mt={1}
                       >
                         {msg.timestamp.toLocaleString('pt-BR')}
