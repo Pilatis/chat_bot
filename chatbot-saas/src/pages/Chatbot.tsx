@@ -65,11 +65,11 @@ export const Chatbot: React.FC = () => {
           <Box>
             <HStack gap={4} align="center">
               <Text fontSize="2xl" fontWeight="bold" color="gray.700">
-                Teste do Chatbot
+                Teste do Assistente
               </Text>
             </HStack>
             <Text color="gray.600">
-              Teste o seu chatbot antes de colocá-lo em produção
+              Teste o seu assistente antes de colocá-lo em produção
             </Text>
           </Box>
           <Card>
@@ -90,11 +90,11 @@ export const Chatbot: React.FC = () => {
           <Box>
             <HStack gap={4} align="center">
               <Text fontSize="2xl" fontWeight="bold" color="gray.700">
-                Teste do Chatbot
+                Teste do Assistente
               </Text>
             </HStack>
             <Text color="gray.600">
-              Teste o seu chatbot antes de colocá-lo em produção
+              Teste o seu assistente antes de colocá-lo em produção
             </Text>
           </Box>
           <Card>
@@ -115,7 +115,7 @@ export const Chatbot: React.FC = () => {
         <Box>
           <HStack gap={4} align="center">
             <Text fontSize="2xl" fontWeight="bold" color="gray.700">
-              Teste do Chatbot
+              Teste do Assistente
             </Text>
             <Badge
               colorScheme={isTrained ? 'green' : 'orange'}
@@ -128,7 +128,7 @@ export const Chatbot: React.FC = () => {
             </Badge>
           </HStack>
           <Text color="gray.600">
-            Teste o seu chatbot antes de colocá-lo em produção
+            Teste o seu assistente antes de colocá-lo em produção
           </Text>
         </Box>
 
@@ -137,9 +137,9 @@ export const Chatbot: React.FC = () => {
             <HStack>
               <FiAlertCircle color="orange" />
               <Box>
-                <Text fontWeight="bold" color="orange.700">Chatbot não treinado!</Text>
+                <Text fontWeight="bold" color="orange.700">Assistente não treinado!</Text>
                 <Text fontSize="sm" color="orange.600">
-                  Configure os dados da sua empresa na página "Empresa" para treinar o chatbot.
+                  Configure os dados da sua empresa na página "Empresa" para treinar o assistente.
                 </Text>
               </Box>
             </HStack>
@@ -151,9 +151,9 @@ export const Chatbot: React.FC = () => {
             <HStack>
               <FiCheckCircle color="green" />
               <Box>
-                <Text fontWeight="bold" color="green.700">Chatbot treinado e funcionando!</Text>
+                <Text fontWeight="bold" color="green.700">Assistente treinado e funcionando!</Text>
                 <Text fontSize="sm" color="green.600">
-                  O chatbot está pronto para atender seus clientes com base nas informações da sua empresa.
+                  O assistente está pronto para atender seus clientes com base nas informações da sua empresa.
                 </Text>
               </Box>
             </HStack>
@@ -166,7 +166,7 @@ export const Chatbot: React.FC = () => {
               Simulador de Conversa
             </Text>
             <Text color="gray.600" fontSize="sm">
-              Digite uma pergunta para testar como o chatbot responderia a um cliente real.
+              Digite uma pergunta para testar como o assistente responderia a um cliente real.
             </Text>
             
             <ChatBox

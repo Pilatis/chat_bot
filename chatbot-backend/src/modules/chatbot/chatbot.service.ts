@@ -58,6 +58,17 @@ export class ChatbotService {
   ): Promise<ChatResponse> {
     const startTime = Date.now();
 
+    const withConversationId = (conversationId?: string) =>
+      conversationId ? { conversationId } : {};
+
+    const normalizeCacheSource = (
+      source?: ChatResponse['source']
+    ): 'RAG' | 'MEMORY' | 'AI' | 'HYBRID' => {
+      // O SemanticCacheService não aceita "CACHE" como source.
+      if (!source || source === 'CACHE') return 'AI';
+      return source;
+    };
+
     // Verificar se a empresa pertence ao usuário
     const company = await prisma.company.findFirst({
       where: { id: companyId, ownerId: userId },
@@ -73,7 +84,7 @@ export class ChatbotService {
     // 1. LOG LAYER - Registra mensagem do cliente
     const clientMessageLog = await this.logService.logMessage({
       companyId,
-      conversationId: message.conversationId,
+      ...withConversationId(message.conversationId),
       from: 'CLIENT',
       content: message.message,
       source: message.source || 'API',
@@ -101,7 +112,7 @@ export class ChatbotService {
           data: {
             companyId,
             clientPhone: message.clientPhone,
-            clientName: message.clientName,
+            clientName: message.clientName ?? null,
             status: 'ACTIVE'
           }
         });
@@ -124,7 +135,7 @@ export class ChatbotService {
       // Log da resposta do bot
       await this.logService.logMessage({
         companyId,
-        conversationId,
+        ...withConversationId(conversationId),
         from: 'BOT',
         content: cachedResponse.response,
         source: message.source || 'API',
@@ -174,7 +185,7 @@ export class ChatbotService {
         companyId,
         message.message,
         {
-          conversationId,
+          ...withConversationId(conversationId),
           limit: 3,
           minSimilarity: 0.75
         }
@@ -245,7 +256,7 @@ export class ChatbotService {
     // 6. LOG LAYER - Registra resposta do bot
     await this.logService.logMessage({
       companyId,
-      conversationId,
+      ...withConversationId(conversationId),
       from: 'BOT',
       content: aiResponse.response,
       source: message.source || 'API',
@@ -263,10 +274,10 @@ export class ChatbotService {
     // 7. CACHE LAYER - Salva resposta no cache (assíncrono)
     this.cacheService.saveCache({
       companyId,
-      conversationId,
+      ...withConversationId(conversationId),
       query: message.message,
       response: aiResponse.response,
-      source: aiResponse.source || 'AI',
+      source: normalizeCacheSource(aiResponse.source),
       confidence: aiResponse.confidence
     }).catch(err => console.error('Erro ao salvar cache:', err));
 

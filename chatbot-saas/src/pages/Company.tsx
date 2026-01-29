@@ -146,7 +146,7 @@ export const Company: React.FC = () => {
       
       if (response.data?.success) {
         setIsTrained(true);
-        showSuccess('IA treinada com sucesso! O chatbot agora conhece todos os seus produtos e pode responder automaticamente via WhatsApp.', {
+        showSuccess('IA treinada com sucesso! O assistente agora conhece todos os seus produtos e pode responder automaticamente via WhatsApp.', {
           title: 'Treinamento concluído!'
         });
       } else {
@@ -210,7 +210,7 @@ export const Company: React.FC = () => {
               Configurações da Empresa
             </Text>
             <Text color="grayBold">
-              Configure os dados da sua empresa para treinar o chatbot
+              Configure os dados da sua empresa para treinar o assistente
             </Text>
           </Box>
           <Card>
@@ -233,7 +233,7 @@ export const Company: React.FC = () => {
               Configurações da Empresa
             </Text>
             <Text color="grayBold">
-              Configure os dados da sua empresa para treinar o chatbot
+              Configure os dados da sua empresa para treinar o assistente
             </Text>
           </Box>
           <Card>
@@ -256,7 +256,7 @@ export const Company: React.FC = () => {
             Configurações da Empresa
           </Text>
           <Text color="grayBold">
-            Configure os dados da sua empresa para treinar o chatbot
+            Configure os dados da sua empresa para treinar o assistente
           </Text>
         </Box>
 
@@ -311,8 +311,8 @@ export const Company: React.FC = () => {
                           Por que cadastrar produtos/serviços?
                         </Text>
                         <Text fontSize="xs">
-                          Ao cadastrar seus produtos e serviços aqui, a IA do chatbot será treinada com essas informações. 
-                          Quando clientes perguntarem sobre seus produtos via WhatsApp, o chatbot poderá responder automaticamente 
+                          Ao cadastrar seus produtos e serviços aqui, a IA do assistente será treinada com essas informações. 
+                          Quando clientes perguntarem sobre seus produtos via WhatsApp, o assistente poderá responder automaticamente 
                           com detalhes, preços e características, melhorando o atendimento e aumentando as vendas.
                         </Text>
                       </VStack>
@@ -324,7 +324,7 @@ export const Company: React.FC = () => {
                       size="xs"
                       variant="ghost"
                       color="gray.500"
-                      _hover={{ color: 'indigo.500', bg: 'gray.100' }}
+                      _hover={{ color: 'contexta.500', bg: 'gray.100' }}
                     >
                       <FiInfo />
                     </IconButton>
@@ -333,10 +333,10 @@ export const Company: React.FC = () => {
                 <Button
                   onClick={() => setIsAddProductModalOpen(true)}
                   size="sm"
-                  bg="indigo.500"
+                  bg="contexta.500"
                   color="white"
                   variant="outline"
-                  _hover={{ bg: 'indigo.600' }}
+                  _hover={{ bg: 'contexta.600' }}
                   loading={isProductLoading}
                   disabled={isProductLoading || isSaving}
                 >
@@ -399,7 +399,7 @@ export const Company: React.FC = () => {
                 {(!company?.products || company.products.length === 0) && (
                   <EmptyState
                     title="Nenhum produto adicionado"
-                    description="Adicione produtos ou serviços para treinar o chatbot"
+                    description="Adicione produtos ou serviços para treinar o assistente"
                     icon={<FiPlus size={32} color="#9ca3af" />}
                   />
                 )}
@@ -485,10 +485,10 @@ export const Company: React.FC = () => {
             <HStack gap={4}>
               <Button
                 onClick={handleSave}
-                bg="indigo.500"
+                bg="contexta.500"
                 color="white"
                 size="lg"
-                _hover={{ bg: 'indigo.600' }}
+                _hover={{ bg: 'contexta.600' }}
                 loading={isSaving}
                 disabled={isSaving || isProductLoading}
               >
@@ -518,7 +518,7 @@ export const Company: React.FC = () => {
                 borderRadius="md"
               >
                 <Text color="green.700" fontWeight="medium">
-                  ✅ IA treinada com sucesso! O chatbot está pronto para atender seus clientes.
+                  ✅ IA treinada com sucesso! O assistente está pronto para atender seus clientes.
                 </Text>
               </Box>
             )}

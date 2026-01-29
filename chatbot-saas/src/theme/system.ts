@@ -1,28 +1,53 @@
 import { createSystem, defaultConfig } from '@chakra-ui/react';
 import { textStyles } from './text-styles';
 
+// Contexta: gradiente primário = hsl(187 100% 42%) → hsl(199 100% 50%)
+// Secundário escuro = hsl(222 47% 8%) → hsl(222 47% 5%)
+const CONTEXTA_PRIMARY = '#00A8C9'; // hsl(187 100% 42%)
+const CONTEXTA_PRIMARY_END = '#0099FF'; // hsl(199 100% 50%)
+const CONTEXTA_HOVER = '#0088B8';
+const CONTEXTA_DARK_800 = '#0D1117'; // hsl(222 47% 8%)
+const CONTEXTA_DARK_900 = '#080B0F'; // hsl(222 47% 5%)
+
 export const system = createSystem(defaultConfig, {
   theme: {
     textStyles,
     tokens: {
       colors: {
-        // Paleta neutra moderna - Azul suave como primária
-        primaryButton: { value: '#6366F1' }, // Indigo suave
-        baseOrange: { value: '#4F46E5' }, // Indigo mais escuro para hover
-        lightOrange: { value: '#6366F120' }, // Indigo com transparência
-        grayTooltip: { value: '#1A1A1A' }, // Preto suave
-        grayBorder: { value: '#E5E7EB' }, // Cinza claro para bordas
-        grayBold: { value: '#6B7280' }, // Cinza médio para textos
-        grayInput: { value: '#F3F4F6' }, // Cinza muito claro para inputs
-        whiteLight: { value: '#FAFAFA' }, // Branco suave para backgrounds
-        defaultBlack: { value: '#0A0A0A' }, // Preto suave
-        yellowSide: { value: '#8B5CF6' }, // Roxo suave como accent
+        // Contexta - primária (logo/azul)
+        primaryButton: { value: CONTEXTA_PRIMARY },
+        baseOrange: { value: CONTEXTA_HOVER },
+        lightOrange: { value: `${CONTEXTA_PRIMARY}26` },
+        grayTooltip: { value: '#1A1A1A' },
+        grayBorder: { value: '#E5E7EB' },
+        grayBold: { value: '#6B7280' },
+        grayInput: { value: '#F3F4F6' },
+        whiteLight: { value: '#FAFAFA' },
+        defaultBlack: { value: '#0A0A0A' },
+        yellowSide: { value: CONTEXTA_PRIMARY_END },
         primary: {
-          100: { value: '#6366F1' }, // Indigo suave
-          200: { value: '#8B5CF6' }, // Roxo suave
-          300: { value: '#F3F4F6' } // Cinza claro
+          100: { value: CONTEXTA_PRIMARY },
+          200: { value: CONTEXTA_PRIMARY_END },
+          300: { value: '#F3F4F6' }
         },
-        // Tons de cinza adicionais
+        // Contexta - escala primária (azul/ciano)
+        contexta: {
+          50: { value: '#E6FAFC' },
+          100: { value: '#B3F0F7' },
+          200: { value: '#80E6F2' },
+          300: { value: '#4DD9ED' },
+          400: { value: '#1AC9E6' },
+          500: { value: CONTEXTA_PRIMARY },
+          600: { value: CONTEXTA_PRIMARY_END },
+          700: { value: CONTEXTA_HOVER },
+          800: { value: '#006B85' },
+          900: { value: '#004D61' }
+        },
+        // Contexta - secundário escuro (sidebar/fundos)
+        contextaDark: {
+          800: { value: CONTEXTA_DARK_800 },
+          900: { value: CONTEXTA_DARK_900 }
+        },
         gray: {
           50: { value: '#FAFAFA' },
           100: { value: '#F5F5F5' },
@@ -35,30 +60,29 @@ export const system = createSystem(defaultConfig, {
           800: { value: '#1F2937' },
           900: { value: '#111827' }
         },
-        // Tons de azul/roxo
         indigo: {
-          50: { value: '#EEF2FF' },
-          100: { value: '#E0E7FF' },
-          200: { value: '#C7D2FE' },
-          300: { value: '#A5B4FC' },
-          400: { value: '#818CF8' },
-          500: { value: '#6366F1' },
-          600: { value: '#4F46E5' },
-          700: { value: '#4338CA' },
-          800: { value: '#3730A3' },
-          900: { value: '#312E81' }
+          50: { value: '#E6FAFC' },
+          100: { value: '#B3F0F7' },
+          200: { value: '#80E6F2' },
+          300: { value: '#4DD9ED' },
+          400: { value: '#1AC9E6' },
+          500: { value: CONTEXTA_PRIMARY },
+          600: { value: CONTEXTA_PRIMARY_END },
+          700: { value: CONTEXTA_HOVER },
+          800: { value: '#006B85' },
+          900: { value: '#004D61' }
         },
         purple: {
-          50: { value: '#FAF5FF' },
-          100: { value: '#F3E8FF' },
-          200: { value: '#E9D5FF' },
-          300: { value: '#D8B4FE' },
-          400: { value: '#C084FC' },
-          500: { value: '#A855F7' },
-          600: { value: '#8B5CF6' },
-          700: { value: '#7C3AED' },
-          800: { value: '#6D28D9' },
-          900: { value: '#5B21B6' }
+          50: { value: '#E6FAFC' },
+          100: { value: '#B3F0F7' },
+          200: { value: '#80E6F2' },
+          300: { value: '#4DD9ED' },
+          400: { value: '#1AC9E6' },
+          500: { value: CONTEXTA_PRIMARY },
+          600: { value: CONTEXTA_PRIMARY_END },
+          700: { value: CONTEXTA_HOVER },
+          800: { value: '#006B85' },
+          900: { value: '#004D61' }
         }
       },
       fontSizes: {

@@ -42,11 +42,11 @@ export class SemanticCacheService {
     // Gera embedding da query
     const queryEmbedding = await this.embeddingService.generateEmbedding(query);
 
-    // Busca caches similares
+    // Busca caches similares (só passa cacheType se definido, por causa de exactOptionalPropertyTypes)
     const caches = await searchSimilarCaches(companyId, queryEmbedding, {
       limit: 1,
       minSimilarity,
-      cacheType: options.cacheType,
+      ...(options.cacheType !== undefined && { cacheType: options.cacheType }),
       isActive: true
     });
 
@@ -94,7 +94,7 @@ export class SemanticCacheService {
 
     return await createConversationCacheWithVector({
       companyId: data.companyId,
-      conversationId: data.conversationId,
+      ...(data.conversationId !== undefined && { conversationId: data.conversationId }),
       queryEmbedding,
       queryText: data.query,
       response: data.response,

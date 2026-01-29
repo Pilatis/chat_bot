@@ -32,7 +32,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const bgUser = 'indigo.500';
+  const bgUser = 'contexta.500';
   const bgBot = 'gray.100';
 
   const scrollToBottom = () => {
@@ -83,7 +83,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
                 gap={3}
               >
                 {message.isFromBot && (
-                  <Avatar.Root size="sm" bg="indigo.500">
+                  <Avatar.Root size="sm" bg="contexta.500">
                     <Avatar.Image src="" alt="Bot" />
                     <Avatar.Fallback>B</Avatar.Fallback>
                   </Avatar.Root>
@@ -108,7 +108,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
                 </Box>
                 
                 {!message.isFromBot && (
-                  <Avatar.Root size="sm" bg="purple.500">
+                  <Avatar.Root size="sm" bg="contexta.600">
                     <Avatar.Image src="" alt="Você" />
                     <Avatar.Fallback>V</Avatar.Fallback>
                   </Avatar.Root>
@@ -134,9 +134,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
             onClick={handleSend}
             disabled={!inputValue.trim() || disabled}
             size="sm"
-            bg="indigo.500"
+            bg="contexta.500"
             color="white"
-            _hover={{ bg: 'indigo.600' }}
+            _hover={{ bg: 'contexta.600' }}
             loading={loading}
           >
             <FiSend />

@@ -62,7 +62,7 @@ export const Plans: React.FC = () => {
                   position="relative"
                   bg={isActive ? 'green.50' : plan.planType === 'PRO' ? 'blue.50' : 'white'}
                   border={isActive ? '2px' : plan.planType === 'PRO' ? '2px' : '1px'}
-                  borderColor={isActive ? 'indigo.500' : plan.planType === 'PRO' ? 'indigo.500' : 'gray.200'}
+                  borderColor={isActive ? 'contexta.500' : plan.planType === 'PRO' ? 'contexta.500' : 'gray.200'}
                   transform={plan.planType === 'PRO' || isActive ? 'scale(1.05)' : 'scale(1)'}
                   transition="all 0.2s"
                 >
@@ -109,7 +109,7 @@ export const Plans: React.FC = () => {
                       {plan.name}
                     </Text>
                     <HStack justify="center" align="baseline" mt={2}>
-                      <Text fontSize="4xl" fontWeight="bold" color="indigo.600">
+                      <Text fontSize="4xl" fontWeight="bold" color="contexta.600">
                         R$ {plan.price}
                       </Text>
                       {plan.price > 0 && (
@@ -137,10 +137,13 @@ export const Plans: React.FC = () => {
                   </VStack>
 
                   <Button
-                    colorScheme={isActive ? 'indigo' : plan.planType === 'PRO' ? 'indigo' : 'gray'}
+                    bg={isActive || plan.planType === 'PRO' ? 'contexta.500' : undefined}
+                    color={isActive || plan.planType === 'PRO' ? 'white' : undefined}
+                    colorScheme={isActive || plan.planType === 'PRO' ? undefined : 'gray'}
                     size="lg"
                     w="full"
                     variant={isActive ? 'solid' : plan.planType === 'PRO' ? 'solid' : 'outline'}
+                    _hover={isActive || plan.planType === 'PRO' ? { bg: 'contexta.600' } : undefined}
                     onClick={() => !isActive && handleSubscribe(plan.id)}
                     loading={loadingPlanId === plan.id}
                     disabled={loadingPlanId !== null || isActive}

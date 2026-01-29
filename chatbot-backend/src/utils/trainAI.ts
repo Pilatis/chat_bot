@@ -1,5 +1,5 @@
-// Simulação de treinamento de IA
-// Em um cenário real, aqui seria integrado com serviços como OpenAI, Google AI, etc.
+// Respostas mockadas até integrar a API (ex.: OpenAI/ChatGPT).
+// Em produção: substituir generateAIResponse por chamada à API de chat.
 
 export interface TrainingData {
   companyName: string;
@@ -38,7 +38,7 @@ export const trainAIWithCompanyData = (data: TrainingData): string => {
   return JSON.stringify(knowledge);
 };
 
-// Simula a resposta da IA baseada na mensagem do cliente
+/** Resposta mockada por palavras-chave. Trocar por chamada à API quando tiver a key. */
 export const generateAIResponse = (
   userMessage: string,
   trainingData: string

@@ -17,17 +17,17 @@ function ServerDownSvg() {
       <circle cx="58" cy="107" r="4" fill="#9CA3AF" />
       <path
         d="M156 146L196 166"
-        stroke="#6366F1"
+        stroke="#00A8C9"
         strokeWidth="6"
         strokeLinecap="round"
       />
       <path
         d="M196 146L156 166"
-        stroke="#6366F1"
+        stroke="#00A8C9"
         strokeWidth="6"
         strokeLinecap="round"
       />
-      <circle cx="176" cy="156" r="26" fill="#EEF2FF" stroke="#C7D2FE" strokeWidth="2" />
+      <circle cx="176" cy="156" r="26" fill="#E6FAFC" stroke="#80E6F2" strokeWidth="2" />
     </svg>
   );
 }
@@ -105,9 +105,9 @@ export const ServerUnavailable: React.FC = () => {
 
           <HStack justify="center" gap={3} flexWrap="wrap">
             <Button
-              bg="indigo.500"
               color="white"
-              _hover={{ bg: 'indigo.600' }}
+              style={{ background: 'var(--gradient-primary)' }}
+              _hover={{ opacity: 0.95 }}
               onClick={handleRetry}
               loading={isRetrying}
               loadingText="Testando conexão..."

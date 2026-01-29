@@ -31,9 +31,12 @@ export class EmbeddingService {
       throw new Error('Texto não pode ser vazio');
     }
 
-    // Se não tiver API key, usa simulação (apenas para desenvolvimento)
-    if (!this.apiKey) {
-      console.warn('⚠️  OPENAI_API_KEY não configurada. Usando embedding simulado (apenas para desenvolvimento)');
+    // Mock: sem API key ou USE_MOCK_EMBEDDINGS=true → usa embedding simulado até integrar a API
+    const useMock = !this.apiKey || process.env['USE_MOCK_EMBEDDINGS'] === 'true';
+    if (useMock) {
+      if (!this.apiKey) {
+        console.warn('⚠️  OPENAI_API_KEY não configurada. Usando embedding simulado até integrar a API.');
+      }
       return this.generateSimulatedEmbedding(text);
     }
 
@@ -87,9 +90,12 @@ export class EmbeddingService {
       return [];
     }
 
-    // Se não tiver API key, usa simulação
-    if (!this.apiKey) {
-      console.warn('⚠️  OPENAI_API_KEY não configurada. Usando embeddings simulados');
+    // Mock: sem API key ou USE_MOCK_EMBEDDINGS=true → usa embeddings simulados até integrar a API
+    const useMock = !this.apiKey || process.env['USE_MOCK_EMBEDDINGS'] === 'true';
+    if (useMock) {
+      if (!this.apiKey) {
+        console.warn('⚠️  OPENAI_API_KEY não configurada. Usando embeddings simulados até integrar a API.');
+      }
       return texts.map(text => this.generateSimulatedEmbedding(text));
     }
 

@@ -8,11 +8,38 @@
   color: #0A0A0A;
   background-color: #FAFAFA;
 
+  /* Contexta - gradientes da marca */
+  --gradient-primary: linear-gradient(135deg, hsl(187 100% 42%) 0%, hsl(199 100% 50%) 100%);
+  --gradient-secondary: linear-gradient(135deg, hsl(222 47% 8%) 0%, hsl(222 47% 5%) 100%);
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+}
+
+.bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.bg-gradient-secondary {
+  background: var(--gradient-secondary);
+}
+
+.gradient-text-primary {
+  background-clip: text;
+  color: transparent;
+  background-image: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-image: var(--gradient-primary);
 }
 
 * {
@@ -111,7 +138,7 @@ body {
   width: 20px;
   height: 20px;
   border: 3px solid #F3F4F6;
-  border-top: 3px solid #6366F1;
+  border-top: 3px solid #00A8C9;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

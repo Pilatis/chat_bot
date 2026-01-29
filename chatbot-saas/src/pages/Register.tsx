@@ -14,6 +14,7 @@ import { Formik, Form, Field, FieldProps } from 'formik';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { registerSchema, RegisterFormData } from '../schemas/auth.schemas';
+import { ContextaLogo } from '../components/ContextaLogo';
 
 export const Register: React.FC = () => {
   const { register, isLoading, error } = useAuth();
@@ -70,9 +71,7 @@ export const Register: React.FC = () => {
       >
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
-            <Text fontSize="h1" fontWeight="h1" color="indigo.500">
-              Chatbot
-            </Text>
+            <ContextaLogo size="lg" />
             <Text fontSize="h6" color="grayBold">
               Crie sua conta gratuita
             </Text>
@@ -181,13 +180,13 @@ export const Register: React.FC = () => {
 
                     <Button
                       type="submit"
-                      bg="indigo.500"
                       color="white"
                       size="lg"
                       w="full"
                       loading={isLoading || isSubmitting}
                       loadingText="Criando conta..."
-                      _hover={{ bg: 'indigo.600' }}
+                      sx={{ background: 'var(--gradient-primary)' }}
+                      _hover={{ opacity: 0.95 }}
                     >
                       Criar conta
                     </Button>
@@ -199,7 +198,7 @@ export const Register: React.FC = () => {
 
           <HStack>
             <Text color="grayBold">Já tem uma conta?</Text>
-            <Link as={RouterLink} href="/login" color="indigo.500" _hover={{ color: 'indigo.600' }}>
+            <Link as={RouterLink} href="/login" color="contexta.500" _hover={{ color: 'contexta.600' }}>
               Faça login
             </Link>
           </HStack>

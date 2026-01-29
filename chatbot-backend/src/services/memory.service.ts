@@ -124,10 +124,10 @@ export class MemoryService {
       });
     }
 
-    // Cria nova memória
+    // Cria nova memória (conversationId só entra se definido, por causa de exactOptionalPropertyTypes)
     return await createConversationCacheWithVector({
       companyId: data.companyId,
-      conversationId: data.conversationId,
+      ...(data.conversationId !== undefined && { conversationId: data.conversationId }),
       queryEmbedding,
       queryText: `${data.key}: ${data.value}`,
       cacheType: 'MEMORY',
@@ -166,7 +166,7 @@ export class MemoryService {
     // TODO: Aqui você pode usar IA para extrair memórias automaticamente
     // Por enquanto, vamos salvar memórias básicas baseadas em padrões
 
-    const memories = [];
+    const memories: Array<{ type: string; value?: string; key?: string }> = [];
 
     // Extrai preferências (palavras-chave como "prefiro", "gosto", etc)
     if (this.containsPreference(clientMessages)) {
@@ -220,7 +220,8 @@ export class MemoryService {
     const lowerText = text.toLowerCase();
     if (lowerText.includes('prefiro')) {
       const match = text.match(/prefiro\s+(.+?)(?:\.|,|$)/i);
-      return match ? match[1].trim() : null;
+      const value = match?.[1];
+      return value ? value.trim() : null;
     }
     return null;
   }

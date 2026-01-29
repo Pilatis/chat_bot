@@ -17,6 +17,7 @@ import {
   FiChevronRight,
 } from 'react-icons/fi';
 import { Link, useLocation } from 'react-router-dom';
+import { ContextaLogo } from './ContextaLogo';
 
 interface SidebarProps {
   onClose?: () => void;
@@ -43,11 +44,11 @@ const NavItem = ({ icon, children, to, onClose, isCollapsed }: NavItemProps) => 
         rounded="lg"
         role="group"
         cursor="pointer"
-        bg={isActive ? 'indigo.500' : 'transparent'}
+        bg={isActive ? 'contexta.500' : 'transparent'}
         color={isActive ? 'white' : 'gray.300'}
         _hover={{
-          bg: isActive ? 'indigo.600' : 'gray.800',
-          color: isActive ? 'white' : 'indigo.400',
+          bg: isActive ? 'contexta.600' : 'contextaDark.800',
+          color: isActive ? 'white' : 'contexta.400',
         }}
         transition="all 0.2s"
         justify={isCollapsed ? 'center' : 'flex-start'}
@@ -71,9 +72,9 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
     <Box
       w={isCollapsed ? "80px" : "250px"}
       h="full"
-      bg="gray.900"
+      className="bg-gradient-secondary"
       borderRight="1px"
-      borderColor="gray.800"
+      borderColor="contextaDark.800"
       py={6}
       px={isCollapsed ? 2 : 4}
       transition="all 0.3s ease"
@@ -81,9 +82,7 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
       <VStack gap={2} align="stretch">
         <HStack justify="space-between" mb={8}>
           {!isCollapsed && (
-            <Text fontSize="h3" fontWeight="h3" color="indigo.400">
-              Chatbot
-            </Text>
+            <ContextaLogo size="lg" variant="solid" centered={false} />
           )}
           <IconButton
             aria-label="Toggle sidebar"
@@ -91,7 +90,7 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
             variant="ghost"
             color="gray.300"
             onClick={onToggle}
-            _hover={{ bg: 'gray.800', color: 'indigo.400' }}
+            _hover={{ bg: 'contextaDark.800', color: 'contexta.400' }}
           >
             {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
           </IconButton>
@@ -105,7 +104,7 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
             Empresa
           </NavItem>
           <NavItem icon={FiMessageSquare} to="/chatbot" onClose={onClose} isCollapsed={isCollapsed}>
-            Chatbot
+            Assistente
           </NavItem>
           <NavItem icon={FiMessageSquare} to="/messages" onClose={onClose} isCollapsed={isCollapsed}>
             Mensagens

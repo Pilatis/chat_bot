@@ -151,7 +151,7 @@ export const Messages: React.FC = () => {
                       alignSelf={msg.isFromBot ? 'flex-start' : 'flex-end'}
                       maxW="80%"
                       p={3}
-                      bg={msg.isFromBot ? 'gray.100' : 'indigo.500'}
+                      bg={msg.isFromBot ? 'gray.100' : 'contexta.500'}
                       color={msg.isFromBot ? 'gray.800' : 'white'}
                       borderRadius="lg"
                     >

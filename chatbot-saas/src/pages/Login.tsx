@@ -14,6 +14,7 @@ import { Formik, Form, Field, FieldProps } from 'formik';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { loginSchema, LoginFormData } from '../schemas/auth.schemas';
+import { ContextaLogo } from '../components/ContextaLogo';
 
 export const Login: React.FC = () => {
   const { login, isLoading, error, clearError } = useAuth();
@@ -61,9 +62,7 @@ export const Login: React.FC = () => {
       >
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
-            <Text fontSize="h1" fontWeight="h1" color="indigo.500">
-              Chatbot
-            </Text>
+            <ContextaLogo size="lg" />
             <Text fontSize="h6" color="grayBold">
               Faça login para acessar sua conta
             </Text>
@@ -118,13 +117,13 @@ export const Login: React.FC = () => {
 
                     <Button
                       type="submit"
-                      bg="indigo.500"
                       color="white"
                       size="lg"
                       w="full"
                       loading={isLoading || isSubmitting}
                       loadingText="Entrando..."
-                      _hover={{ bg: 'indigo.600' }}
+                      style={{ background: 'var(--gradient-primary)' }}
+                      _hover={{ opacity: 0.95 }}
                     >
                       Entrar
                     </Button>
@@ -136,21 +135,21 @@ export const Login: React.FC = () => {
 
           <HStack>
             <Text color="grayBold">Ainda não tem conta?</Text>
-            <Link as={RouterLink} href="/register" color="indigo.500" _hover={{ color: 'indigo.600' }}>
+            <Link as={RouterLink} href="/register" color="contexta.500" _hover={{ color: 'contexta.600' }}>
               Cadastre-se
             </Link>
           </HStack>
 
           <Box
             p={4}
-            bg="indigo.50"
+            bg="contexta.50"
             rounded="md"
             w="full"
             textAlign="center"
             border="1px"
-            borderColor="indigo.200"
+            borderColor="contexta.200"
           >
-            <Text fontSize="small" color="indigo.700">
+            <Text fontSize="small" color="contexta.700">
               <strong>Demo:</strong> admin@botatende.com / 123456
             </Text>
           </Box>

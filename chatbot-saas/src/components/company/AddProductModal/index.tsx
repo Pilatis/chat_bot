@@ -122,12 +122,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                 Cancelar
               </Button>
               <Button
-                bg="indigo.500"
+                bg="contexta.500"
                 color="white"
                 onClick={handleSubmit}
                 loading={isLoading}
                 disabled={isLoading}
-                _hover={{ bg: 'indigo.600' }}
+                _hover={{ bg: 'contexta.600' }}
               >
                 Adicionar Produto
               </Button>

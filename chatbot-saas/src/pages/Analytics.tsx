@@ -27,7 +27,7 @@ import { Card } from '../components/Card';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { CustomSelect } from '../components/ui/select';
 
-const COLORS = ['#6366F1', '#8B5CF6', '#10b981', '#6B7280', '#A78BFA'];
+const COLORS = ['#00A8C9', '#0099FF', '#10b981', '#6B7280', '#1AC9E6'];
 
 // Função para formatar hora (0-23) para string (00:00)
 const formatHour = (hour: number): string => {
@@ -98,8 +98,8 @@ export const Analytics: React.FC = () => {
     const manual = total - automatic;
 
     return [
-      { name: 'Automáticas', value: automatic, color: '#6366F1' },
-      { name: 'Manuais', value: manual, color: '#8B5CF6' },
+      { name: 'Automáticas', value: automatic, color: '#00A8C9' },
+      { name: 'Manuais', value: manual, color: '#0099FF' },
     ];
   }, [overview]);
 
@@ -154,7 +154,7 @@ export const Analytics: React.FC = () => {
                 Analytics
               </Text>
               <Text color="gray.600">
-                Estatísticas e insights do seu chatbot
+                Estatísticas e insights do seu assistente
               </Text>
             </Box>
             <Box>
@@ -193,7 +193,7 @@ export const Analytics: React.FC = () => {
                         <Line
                           type="monotone"
                           dataKey="messages"
-                          stroke="#6366F1"
+                          stroke="#00A8C9"
                           strokeWidth={2}
                           name="Mensagens Recebidas"
                         />
@@ -270,7 +270,7 @@ export const Analytics: React.FC = () => {
                         <Tooltip />
                         <Legend />
                         <Bar dataKey="client" fill="#6366F1" name="Cliente" />
-                        <Bar dataKey="bot" fill="#8B5CF6" name="Bot" />
+                        <Bar dataKey="bot" fill="#0099FF" name="Bot" />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -347,7 +347,7 @@ export const Analytics: React.FC = () => {
                 <Text fontSize="lg" fontWeight="semibold">
                   Tempo Médio de Resposta
                 </Text>
-                <Text fontSize="3xl" fontWeight="bold" color="indigo.500">
+                <Text fontSize="3xl" fontWeight="bold" color="contexta.500">
                   {formatResponseTime(overview?.averageResponseTime)}
                 </Text>
                 <Text fontSize="sm" color="gray.600">
@@ -365,7 +365,7 @@ export const Analytics: React.FC = () => {
                 <Text fontSize="lg" fontWeight="semibold">
                   Total de Mensagens
                 </Text>
-                <Text fontSize="3xl" fontWeight="bold" color="purple.600">
+                <Text fontSize="3xl" fontWeight="bold" color="contexta.600">
                   {overview?.totalMessages || 0}
                 </Text>
                 <Text fontSize="sm" color="gray.600">

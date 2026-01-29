@@ -13,6 +13,7 @@ import { FiBell, FiUser, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { AvatarComponent } from './Avatar';
+import { ContextaLogo } from './ContextaLogo';
 
 interface NavbarProps {
   onOpen: () => void;
@@ -47,9 +48,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpen, display }) => {
           >
             <Box>☰</Box>
           </IconButton>
-          <Text fontSize="h5" fontWeight="h5" color="defaultBlack">
-            {user?.name || 'Chatbot'}
-          </Text>
+          {user?.name ? (
+            <Text fontSize="h5" fontWeight="h5" color="defaultBlack">
+              {user.name}
+            </Text>
+          ) : (
+            <ContextaLogo size="sm" centered={false} />
+          )}
         </HStack>
 
         <HStack gap={4}>

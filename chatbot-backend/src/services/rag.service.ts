@@ -113,11 +113,13 @@ export class RAGService {
     const texts = chunks.map(chunk => chunk.text);
     const embeddings = await this.embeddingService.generateEmbeddingsBatch(texts);
 
-    // Cria chunks no banco
-    const createdChunks = [];
+    // Cria chunks no banco (tipos mistos: Prisma chunk ou resultado raw do INSERT)
+    const createdChunks: unknown[] = [];
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       const embedding = embeddings[i];
+      if (!chunk || embedding === undefined) continue;
+
       const contentHash = this.hashContent(chunk.text);
 
       // Verifica se chunk já existe (evita duplicatas)
