@@ -62,7 +62,7 @@ export const Login: React.FC = () => {
       >
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
-            <ContextaLogo size="lg" />
+            <ContextaLogo size="xl" />
             <Text fontSize="h6" color="grayBold">
               Faça login para acessar sua conta
             </Text>
@@ -74,62 +74,74 @@ export const Login: React.FC = () => {
               validationSchema={loginSchema}
               onSubmit={handleSubmit}
             >
-              {({ isSubmitting }) => (
-                <Form>
-                  <VStack gap={4}>
-                    <Field name="email">
-                      {({ field, meta }: FieldProps) => (
-                        <Box w="full">
-                          <Input
-                            {...field}
-                            placeholder="Email"
-                            type="email"
-                            size="lg"
-                            borderColor={meta.touched && meta.error ? 'red.500' : undefined}
-                          />
-                          {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>
-                              {meta.error}
-                            </Text>
-                          )}
-                        </Box>
-                      )}
-                    </Field>
+              {({ isSubmitting, submitCount }) => {
+const hasSubmitted = submitCount > 0;
 
-                    <Field name="password">
-                      {({ field, meta }: FieldProps) => (
-                        <Box w="full">
-                          <Input
-                            {...field}
-                            placeholder="Senha"
-                            type="password"
-                            size="lg"
-                            borderColor={meta.touched && meta.error ? 'red.500' : undefined}
-                          />
-                          {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>
-                              {meta.error}
-                            </Text>
-                          )}
-                        </Box>
-                      )}
-                    </Field>
+return (
+  <Form>
+  <VStack gap={4}>
+    <Field name="email">
+      {({ field, meta }: FieldProps) => {
+        const showError = hasSubmitted && meta.error;
+        return (
+          <Box w="full">
+            <Input
+              {...field}
+              placeholder="Email"
+              type="email"
+              size="lg"
+              borderColor={showError ? 'red.500' : undefined}
+            />
+            {showError && (
+              <Text color="red.500" fontSize="sm" mt={1}>
+                {meta.error}
+              </Text>
+            )}
+          </Box>
+        );
+      }}
+    </Field>
 
-                    <Button
-                      type="submit"
-                      color="white"
-                      size="lg"
-                      w="full"
-                      loading={isLoading || isSubmitting}
-                      loadingText="Entrando..."
-                      style={{ background: 'var(--gradient-primary)' }}
-                      _hover={{ opacity: 0.95 }}
-                    >
-                      Entrar
-                    </Button>
-                  </VStack>
-                </Form>
-              )}
+    <Field name="password">
+      {({ field, meta }: FieldProps) => {
+        const showError = hasSubmitted && meta.error;
+        return (
+          <Box w="full">
+            <Input
+              {...field}
+              placeholder="Senha"
+              type="password"
+              size="lg"
+              borderColor={showError ? 'red.500' : undefined}
+            />
+            {showError && (
+              <Text color="red.500" fontSize="sm" mt={1}>
+                {meta.error}
+              </Text>
+            )}
+          </Box>
+        );
+      }}
+    </Field>
+
+    <Button
+      type="submit"
+      color="white"
+      size="lg"
+      w="full"
+      loading={isLoading || isSubmitting}
+      loadingText="Entrando..."
+      style={{ background: 'var(--gradient-primary)' }}
+      _hover={{ opacity: 0.95 }}
+    >
+      Entrar
+    </Button>
+  </VStack>
+</Form>
+)
+              }
+              
+              }
             </Formik>
           </Box>
 
