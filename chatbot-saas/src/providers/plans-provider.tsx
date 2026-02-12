@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PlanContext } from '../context/plan-context';
-import { PlanContextType, UserPlan, Plan, CreatePlanData } from '../types/plan.types';
+import { PlanContextType, UserPlan, Plan, CreatePlanData, type PlanResult } from '../types/plan.types';
 import { useApi } from '../hooks/use-api';
 import { useToast } from '../hooks/useToast';
 
@@ -14,28 +14,31 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { api } = useApi();
-  const { showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
 
   const clearError = (): void => setError(null);
 
-  const createPlan = async (data: CreatePlanData): Promise<Plan> => {
+  const createPlan = async (data: CreatePlanData): Promise<Plan | null> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await api.post('/plan', data);
-      
+
       if (response.data?.success) {
         const newPlan = response.data.data;
-        // Atualizar lista de planos
         setAllPlans(prev => [...prev, newPlan]);
         return newPlan;
-      } else {
-        throw new Error(response.data?.message || 'Erro ao criar plano');
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao criar plano');
-      throw err;
+      const msg = response.data?.message || 'Erro ao criar plano';
+      showError(msg);
+      setError(msg);
+      return null;
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao criar plano';
+      showError(msg);
+      setError(msg);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -51,35 +54,42 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
       if (response.data?.success) {
         setCurrentPlan(response.data.data);
       } else {
-        setError(response.data?.message || 'Erro ao carregar plano atual');
+        const msg = response.data?.message || 'Erro ao carregar plano atual';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar plano atual');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar plano atual';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const assignPlan = async (planId: string): Promise<UserPlan> => {
+  const assignPlan = async (planId: string): Promise<PlanResult> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await api.post('/plan/assign', { planId });
-      
+
       if (response.data?.success) {
         const updatedPlan = response.data.data;
         setCurrentPlan(updatedPlan);
-        // Recarregar planos e plano atual para garantir sincronização
         await Promise.all([getAllPlans(), getUserPlan()]);
-        showSuccess(response.data.message || 'Plano atribuído com sucesso');
-        return updatedPlan;
-      } else {
-        throw new Error(response.data?.message || 'Erro ao atribuir plano');
+        showSuccess(response.data?.message || 'Plano atribuído com sucesso');
+        return 'success';
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao atribuir plano');
-      throw err;
+      const msg = response.data?.message || 'Erro ao atribuir plano';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao atribuir plano';
+      showError(msg);
+      setError(msg);
+      return 'failure';
     } finally {
       setIsLoading(false);
     }
@@ -95,10 +105,14 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
       if (response.data?.success) {
         setAllPlans(response.data.data || []);
       } else {
-        setError(response.data?.message || 'Erro ao carregar planos');
+        const msg = response.data?.message || 'Erro ao carregar planos';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar planos');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar planos';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }

@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { WhatsAppContext } from '../context/whatsapp-context';
-import { WhatsAppContextType, WhatsAppSession, CreateSessionData, SocketState, SendMessageData } from '../types/whatsapp.types';
+import { WhatsAppContextType, WhatsAppSession, CreateSessionData, SocketState, SendMessageData, type WhatsAppResult } from '../types/whatsapp.types';
 import { useApi } from '../hooks/use-api';
+import { useToast } from '../hooks/useToast';
 
 export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({
   children
@@ -14,17 +15,18 @@ export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { api } = useApi();
+  const { showSuccess, showError } = useToast();
 
   const clearError = (): void => setError(null);
 
-  const createSession = async (data: CreateSessionData): Promise<WhatsAppSession> => {
+  const createSession = async (data: CreateSessionData): Promise<WhatsAppSession | null> => {
     try {
       setIsConnecting(true);
       setIsLoading(true);
       setError(null);
-      
+
       const response = await api.post('/whatsapp/session', data);
-      
+
       if (response.data?.success) {
         const sessionData = response.data.data;
         const session: WhatsAppSession = {
@@ -33,19 +35,23 @@ export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({
           status: 'QR_READY',
           isConnected: false
         };
-        
+
         setCurrentSession(session);
         if (sessionData.qrCode) {
           setQrCode(sessionData.qrCode);
         }
-        
+        showSuccess(response.data?.message || 'Sessão criada. Escaneie o QR Code.');
         return session;
-      } else {
-        throw new Error(response.data?.message || 'Erro ao criar sessão');
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao criar sessão');
-      throw err;
+      const msg = response.data?.message || 'Erro ao criar sessão';
+      showError(msg);
+      setError(msg);
+      return null;
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao criar sessão';
+      showError(msg);
+      setError(msg);
+      return null;
     } finally {
       setIsLoading(false);
       setIsConnecting(false);
@@ -68,10 +74,15 @@ export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({
         }
         return null;
       } else {
-        throw new Error(response.data?.message || 'QR Code não disponível');
+        const msg = response.data?.message || 'QR Code não disponível';
+        showError(msg);
+        setError(msg);
+        return null;
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao obter QR Code');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao obter QR Code';
+      showError(msg);
+      setError(msg);
       return null;
     } finally {
       setIsLoading(false);
@@ -110,53 +121,66 @@ export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({
         
         return status;
       } else {
-        throw new Error(response.data?.message || 'Erro ao obter status');
+        const msg = response.data?.message || 'Erro ao obter status';
+        showError(msg);
+        setError(msg);
+        return null;
       }
-    } catch (err: any) {
-      // Se a sessão não existe, limpar o estado
+    } catch (err: unknown) {
       setCurrentSession(prev => {
         if (prev?.sessionName === sessionName) {
           return null;
         }
         return prev;
       });
-      setError(err.message || 'Erro ao obter status da sessão');
+      const msg = (err as Error).message || 'Erro ao obter status da sessão';
+      showError(msg);
+      setError(msg);
       return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const disconnectSession = async (sessionName: string): Promise<void> => {
+  const disconnectSession = async (sessionName: string): Promise<WhatsAppResult> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await api.deleted(`/whatsapp/session/${sessionName}`);
-      
+
       if (response.data?.success) {
         setCurrentSession(null);
         setQrCode(null);
-      } else {
-        throw new Error(response.data?.message || 'Erro ao desconectar sessão');
+        showSuccess(response.data?.message || 'WhatsApp desconectado com sucesso');
+        return 'success';
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao desconectar sessão');
-      throw err;
+      const msg = response.data?.message || 'Erro ao desconectar sessão';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao desconectar sessão';
+      showError(msg);
+      setError(msg);
+      return 'failure';
     } finally {
       setIsLoading(false);
     }
   };
 
-  const sendMessage = async (data: SendMessageData): Promise<boolean> => {
+  const sendMessage = async (data: SendMessageData): Promise<WhatsAppResult> => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const { sessionName, phoneNumber, message } = data;
-      
+
       if (!sessionName || !phoneNumber || !message) {
-        throw new Error('Nome da sessão, número de telefone e mensagem são obrigatórios');
+        const msg = 'Nome da sessão, número de telefone e mensagem são obrigatórios';
+        showError(msg);
+        setError(msg);
+        return 'failure';
       }
 
       const response = await api.post('/whatsapp/send-message', {
@@ -164,15 +188,20 @@ export const WhatsAppProvider: React.FC<{ children: React.ReactNode }> = ({
         phoneNumber,
         message
       });
-      
+
       if (response.data?.success) {
-        return true;
-      } else {
-        throw new Error(response.data?.message || 'Erro ao enviar mensagem');
+        showSuccess(response.data?.message || 'Mensagem enviada com sucesso');
+        return 'success';
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao enviar mensagem');
-      throw err;
+      const msg = response.data?.message || 'Erro ao enviar mensagem';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao enviar mensagem';
+      showError(msg);
+      setError(msg);
+      return 'failure';
     } finally {
       setIsLoading(false);
     }

@@ -70,74 +70,35 @@ export const Company: React.FC = () => {
   const handleAddProduct = async (productData: CreateProductData) => {
     if (!company) return;
 
-    try {
-      const response = await createProduct(productData);
-      if (response?.data?.success) {
-        showSuccess('Produto adicionado com sucesso!', {
-          title: 'Sucesso!'
-        });
-      } else {
-        showError(response.data?.message || 'Erro ao adicionar produto');
-      }
-    } catch (err) {
-      showError(error || 'Tente novamente', {
-        title: 'Erro ao adicionar produto'
-      });
+    const result = await createProduct(productData);
+    if (result === 'success') {
+      setIsAddProductModalOpen(false);
     }
   };
 
   const removeProduct = async (id: string) => {
-    try {
-      await deleteProduct(id);
-      showSuccess('Produto removido!');
-    } catch (err) {
-      showError(error || 'Tente novamente', {
-        title: 'Erro ao remover produto'
-      });
-    }
+    await deleteProduct(id);
   };
 
   const handleAddService = async (serviceData: CreateServiceData) => {
     if (!company) return;
 
-    try {
-      await createService(serviceData);
-      showSuccess('Serviço adicionado com sucesso!', { title: 'Sucesso!' });
-    } catch (err) {
-      showError(error || 'Tente novamente', {
-        title: 'Erro ao adicionar serviço'
-      });
-      throw err;
+    const result = await createService(serviceData);
+    if (result === 'success') {
+      setIsAddServiceModalOpen(false);
     }
   };
 
   const removeService = async (id: string) => {
-    try {
-      await deleteService(id);
-      showSuccess('Serviço removido!');
-    } catch (err) {
-      showError(error || 'Tente novamente', {
-        title: 'Erro ao remover serviço'
-      });
-    }
+    await deleteService(id);
   };
 
   const handleSave = async () => {
-    try {
-      await createOrUpdateCompany({
-        name: companyName,
-        description: description,
-        whatsappNumber: whatsappNumber
-      });
-
-      showSuccess('Os dados da empresa foram atualizados com sucesso.', {
-        title: 'Informações salvas!'
-      });
-    } catch (err) {
-      showError(error || 'Tente novamente', {
-        title: 'Erro ao salvar empresa'
-      });
-    }
+    await createOrUpdateCompany({
+      name: companyName,
+      description: description,
+      whatsappNumber: whatsappNumber
+    });
   };
 
   const handleTrain = async () => {

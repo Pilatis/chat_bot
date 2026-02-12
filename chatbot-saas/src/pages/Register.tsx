@@ -12,13 +12,11 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { useAuth } from '../hooks/useAuth';
-import { useToast } from '../hooks/useToast';
 import { registerSchema, RegisterFormData } from '../schemas/auth.schemas';
 import { ContextaLogo } from '../components/ContextaLogo';
 
 export const Register: React.FC = () => {
   const { register, isLoading, error } = useAuth();
-  const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
 
   const bg = 'whiteLight';
@@ -33,22 +31,14 @@ export const Register: React.FC = () => {
   };
 
   const handleSubmit = async (values: RegisterFormData) => {
-    try {
-      await register({
-        name: values.name,
-        email: values.email,
-        phone: values.phone,
-        password: values.password,
-      });
-      
-      showSuccess('Redirecionando para configuração da empresa...', {
-        title: 'Conta criada com sucesso!'
-      });
+    const result = await register({
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      password: values.password,
+    });
+    if (result === 'success') {
       navigate('/company');
-    } catch (err) {
-      showError(error || 'Tente novamente', {
-        title: 'Erro no cadastro'
-      });
     }
   };
 

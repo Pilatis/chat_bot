@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from '../context/auth-context';
-import { AuthContextType, LoginData, RegisterData, User } from '../types/auth.types';
+import { AuthContextType, LoginData, RegisterData, User, type AuthResult } from '../types/auth.types';
 import { useApi } from '../hooks/use-api';
+import { useToast } from '../hooks/useToast';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children
@@ -12,6 +13,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { api } = useApi();
+  const { showSuccess, showError } = useToast();
 
   const isAuthenticated = !!user;
 
@@ -43,55 +45,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     initializeAuth();
   }, [api]);
 
-  const login = async (data: LoginData): Promise<void> => {
+  const login = async (data: LoginData): Promise<AuthResult> => {
     try {
       setIsLoading(true);
       setError(null);
       const response = await api.post('/auth/login', data);
-      
+
       if (response.data?.success && response.data?.data) {
         const { user: userData, accessToken, refreshToken } = response.data.data;
-        
-        // Salvar tokens
+
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-        
-        // Salvar dados do usuário
         setUser(userData);
-      } else {
-        throw new Error(response.data?.message || 'Erro no login');
+        showSuccess(response.data?.message || 'Login realizado com sucesso');
+        return 'success';
       }
-    } catch (error: any) {
-      setError(error.message || 'Erro no login');
-      throw error;
+      const msg = response.data?.message || 'Erro no login';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro no login';
+      showError(msg);
+      setError(msg);
+      return 'failure';
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (data: RegisterData): Promise<string> => {
+  const register = async (data: RegisterData): Promise<AuthResult> => {
     try {
       setIsLoading(true);
       setError(null);
       const response = await api.post('/auth/register', data);
-      
+
       if (response.data?.success && response.data?.data) {
         const { user: userData, accessToken, refreshToken } = response.data.data;
-        
-        // Salvar tokens
+
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-        
-        // Salvar dados do usuário
         setUser(userData);
+        showSuccess(response.data?.message || 'Cadastro realizado com sucesso');
         return 'success';
-      } else {
-        throw new Error(response.data?.message || 'Erro no registro');
-        return 'error';
       }
-    } catch (error: any) {
-      setError(error.message || 'Erro no registro');
-      throw error;
+      const msg = response.data?.message || 'Erro no registro';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro no registro';
+      showError(msg);
+      setError(msg);
+      return 'failure';
     } finally {
       setIsLoading(false);
     }
@@ -111,8 +117,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (response.data?.success && response.data?.data) {
         setUser(response.data.data);
       }
-    } catch (error) {
-      // Se falhar ao carregar perfil, fazer logout
+    } catch {
+      showError('Sessão expirada. Faça login novamente.');
       logout();
     }
   };

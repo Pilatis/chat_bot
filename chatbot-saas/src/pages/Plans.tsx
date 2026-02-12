@@ -24,16 +24,9 @@ export const Plans: React.FC = () => {
   }, []);
 
   const handleSubscribe = async (planId: string) => {
-    try {
-      setLoadingPlanId(planId);
-      await assignPlan(planId);
-      // Plano atribuído com sucesso - getUserPlan será chamado automaticamente pelo provider
-    } catch (error) {
-      console.error('Erro ao atribuir plano:', error);
-      // Tratar erro - pode mostrar toast/notificação aqui
-    } finally {
-      setLoadingPlanId(null);
-    }
+    setLoadingPlanId(planId);
+    await assignPlan(planId);
+    setLoadingPlanId(null);
   };
 
   const isPlanActive = (plan: Plan): boolean => {

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { AnalyticsContext } from '../context/analytics-context';
 import { AnalyticsContextType, AnalyticsOverview, HourlyDistribution, TopKeyword, DashboardData, MessagesByTimeRange } from '../types/analytics.types';
 import { useApi } from '../hooks/use-api';
+import { useToast } from '../hooks/useToast';
 
 interface AnalyticsProviderProps {
   children: React.ReactNode;
@@ -17,8 +18,9 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { api } = useApi();
+  const { showError } = useToast();
 
   const clearError = (): void => setError(null);
 
@@ -33,10 +35,14 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
       if (response.data?.success && response.data?.data) {
         setOverview(response.data.data);
       } else {
-        setError(response.data?.message || 'Erro ao carregar visão geral');
+        const msg = response.data?.message || 'Erro ao carregar visão geral';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar visão geral');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar visão geral';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -52,10 +58,14 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
       if (response.data?.success && response.data?.data) {
         setHourlyDistribution(response.data.data);
       } else {
-        setError(response.data?.message || 'Erro ao carregar distribuição horária');
+        const msg = response.data?.message || 'Erro ao carregar distribuição horária';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar distribuição horária');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar distribuição horária';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -71,10 +81,14 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
       if (response.data?.success && response.data?.data) {
         setTopKeywords(response.data.data);
       } else {
-        setError(response.data?.message || 'Erro ao carregar palavras-chave');
+        const msg = response.data?.message || 'Erro ao carregar palavras-chave';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar palavras-chave');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar palavras-chave';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -95,10 +109,14 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
         setHourlyDistribution(data.hourlyDistribution);
         setTopKeywords(data.topKeywords);
       } else {
-        setError(response.data?.message || 'Erro ao carregar dados do dashboard');
+        const msg = response.data?.message || 'Erro ao carregar dados do dashboard';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar dados do dashboard');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar dados do dashboard';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -115,10 +133,16 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children, 
         setIsLoading(false);
         return response.data.data;
       } else {
-        throw new Error(response.data?.message || 'Erro ao carregar mensagens por período');
+        const msg = response.data?.message || 'Erro ao carregar mensagens por período';
+        showError(msg);
+        setError(msg);
+        setIsLoading(false);
+        throw new Error(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar mensagens por período');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar mensagens por período';
+      showError(msg);
+      setError(msg);
       setIsLoading(false);
       throw err;
     }

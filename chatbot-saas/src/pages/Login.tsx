@@ -12,13 +12,11 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { useAuth } from '../hooks/useAuth';
-import { useToast } from '../hooks/useToast';
 import { loginSchema, LoginFormData } from '../schemas/auth.schemas';
 import { ContextaLogo } from '../components/ContextaLogo';
 
 export const Login: React.FC = () => {
-  const { login, isLoading, error, clearError } = useAuth();
-  const { showSuccess, showError } = useToast();
+  const { login, isLoading, clearError } = useAuth();
   const navigate = useNavigate();
 
   const bg = 'whiteLight';
@@ -30,16 +28,10 @@ export const Login: React.FC = () => {
   };
 
   const handleSubmit = async (values: LoginFormData) => {
-    try {
-      clearError();
-      await login(values);
-
-      showSuccess('Login realizado com sucesso!');
+    clearError();
+    const result = await login(values);
+    if (result === 'success') {
       navigate('/dashboard');
-    } catch (err) {
-      showError(error || 'Email ou senha incorretos', {
-        title: 'Erro no login'
-      });
     }
   };
 

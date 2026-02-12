@@ -64,7 +64,7 @@ export const WhatsApp: React.FC = () => {
     isLoading: isWhatsAppLoading,
     getSessionStatus,
   } = useWhatsApp();
-  const { showSuccess, showError } = useToast();
+  const { showError } = useToast();
 
   const [testPhoneNumber, setTestPhoneNumber] = useState('');
   const [testMessage, setTestMessage] = useState('');
@@ -99,22 +99,16 @@ export const WhatsApp: React.FC = () => {
       });
       return;
     }
-    try {
-      setIsSendingTest(true);
-      await sendMessage({
-        sessionName: currentSession.sessionName,
-        phoneNumber: testPhoneNumber,
-        message: testMessage,
-      });
-      showSuccess('Mensagem de teste enviada com sucesso!', { title: 'Mensagem enviada' });
+    setIsSendingTest(true);
+    const result = await sendMessage({
+      sessionName: currentSession.sessionName,
+      phoneNumber: testPhoneNumber,
+      message: testMessage,
+    });
+    if (result === 'success') {
       setTestMessage('');
-    } catch (err: unknown) {
-      showError((err as Error).message || 'Erro ao enviar mensagem de teste', {
-        title: 'Erro ao enviar',
-      });
-    } finally {
-      setIsSendingTest(false);
     }
+    setIsSendingTest(false);
   };
 
   const handleViewConversation = (conversation: typeof mockConversations[0]) => {

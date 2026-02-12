@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChatbotContext } from '../context/chatbot-context';
-import { ChatbotContextType, ChatMessage, ChatStats } from '../types/chatbot.types';
+import { ChatbotContextType, ChatMessage, ChatStats, type ChatbotResult } from '../types/chatbot.types';
 import { useApi } from '../hooks/use-api';
+import { useToast } from '../hooks/useToast';
 
 interface ChatbotProviderProps {
   children: React.ReactNode;
@@ -12,13 +13,14 @@ interface ChatbotProviderProps {
 
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, companyId }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // Inicia como true para carregamento inicial
+  const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isTraining, setIsTraining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<ChatStats | null>(null);
-  
+
   const { api } = useApi();
+  const { showSuccess, showError } = useToast();
 
   const clearError = (): void => setError(null);
 
@@ -59,30 +61,39 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
 
         setMessages(prev => [...prev, botMessage]);
       } else {
-        throw new Error(response.data?.message || 'Erro ao processar mensagem');
+        const msg = response.data?.message || 'Erro ao processar mensagem';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao enviar mensagem');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao processar mensagem';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const trainAI = async (): Promise<void> => {
+  const trainAI = async (): Promise<ChatbotResult> => {
     try {
       setIsTraining(true);
       setError(null);
 
       const response = await api.post(`/chatbot/${companyId}/train`);
-      
+
       if (response.data?.success) {
-        // IA treinada com sucesso
-        console.log('IA treinada com sucesso');
-      } else {
-        setError(response.data?.message || 'Erro ao treinar IA');
+        showSuccess(response.data?.message || 'IA treinada com sucesso');
+        return 'success';
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao treinar IA');
+      const msg = response.data?.message || 'Erro ao treinar IA';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao treinar IA';
+      showError(msg);
+      setError(msg);
+      return 'failure';
     } finally {
       setIsTraining(false);
     }
@@ -98,10 +109,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
       if (response.data?.success && response.data?.data) {
         setMessages(response.data.data);
       } else {
-        setError(response.data?.message || 'Erro ao carregar histórico');
+        const msg = response.data?.message || 'Erro ao carregar histórico';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar histórico');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar histórico';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -117,10 +132,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
       if (response.data?.success && response.data?.data) {
         setStats(response.data.data);
       } else {
-        setError(response.data?.message || 'Erro ao carregar estatísticas');
+        const msg = response.data?.message || 'Erro ao carregar estatísticas';
+        showError(msg);
+        setError(msg);
       }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao carregar estatísticas');
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao carregar estatísticas';
+      showError(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }

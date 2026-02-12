@@ -22,23 +22,21 @@ import {
 import { Card } from '../Card';
 import { useWhatsApp } from '../../hooks/useWhatsApp';
 import { useCompany } from '../../hooks/useCompany';
-import { useToast } from '../../hooks/useToast';
 
 export const WhatsAppConnection: React.FC = () => {
   const { company } = useCompany();
-  const { 
-    createSession, 
-    getQRCode, 
+  const {
+    createSession,
+    getQRCode,
     getSessionStatus,
     disconnectSession,
-    qrCode, 
-    currentSession, 
-    isLoading, 
+    qrCode,
+    currentSession,
+    isLoading,
     isConnecting,
     error,
     clearError
   } = useWhatsApp();
-  const { showSuccess, showError } = useToast();
   
   const [statusCheckInterval, setStatusCheckInterval] = useState<number | null>(null);
   const [isRefreshingQR, setIsRefreshingQR] = useState(false);
@@ -75,72 +73,38 @@ export const WhatsAppConnection: React.FC = () => {
   }, [statusCheckInterval]);
 
   const handleConnect = async () => {
-    if (!company?.id) {
-      showError('ID da empresa não encontrado', { title: 'Erro' });
-      return;
-    }
+    if (!company?.id) return;
 
-    try {
-      clearError();
-      const session = await createSession({
-        companyId: company.id,
-        sessionName: `company_${company.id}`
-      });
+    clearError();
+    const session = await createSession({
+      companyId: company.id,
+      sessionName: `company_${company.id}`
+    });
 
-      // Se não veio QR Code na resposta, buscar
+    if (session) {
       if (!session.qrCode && session.sessionName) {
         await getQRCode(session.sessionName);
       }
-
-      // Iniciar verificação de status
       startStatusCheck(session.sessionName);
-      
-      showSuccess('Sessão criada! Escaneie o QR Code com seu WhatsApp.', {
-        title: 'QR Code gerado'
-      });
-    } catch (err: any) {
-      showError(err.message || 'Erro ao conectar WhatsApp', {
-        title: 'Erro na conexão'
-      });
     }
   };
 
   const handleRefreshQR = async () => {
     if (!currentSession?.sessionName) return;
 
-    try {
-      setIsRefreshingQR(true);
-      clearError();
-      await getQRCode(currentSession.sessionName);
-      showSuccess('QR Code atualizado!', { title: 'Sucesso' });
-    } catch (err: any) {
-      showError(err.message || 'Erro ao atualizar QR Code', {
-        title: 'Erro'
-      });
-    } finally {
-      setIsRefreshingQR(false);
-    }
+    setIsRefreshingQR(true);
+    clearError();
+    await getQRCode(currentSession.sessionName);
+    setIsRefreshingQR(false);
   };
 
   const handleDisconnect = async () => {
     if (!currentSession?.sessionName) return;
 
-    try {
-      await disconnectSession(currentSession.sessionName);
-      
-      // Parar verificação de status
-      if (statusCheckInterval !== null) {
-        window.clearInterval(statusCheckInterval);
-        setStatusCheckInterval(null);
-      }
-      
-      showSuccess('WhatsApp desconectado com sucesso', {
-        title: 'Desconectado'
-      });
-    } catch (err: any) {
-      showError(err.message || 'Erro ao desconectar', {
-        title: 'Erro'
-      });
+    await disconnectSession(currentSession.sessionName);
+    if (statusCheckInterval !== null) {
+      window.clearInterval(statusCheckInterval);
+      setStatusCheckInterval(null);
     }
   };
 
@@ -156,12 +120,8 @@ export const WhatsAppConnection: React.FC = () => {
         const status = await getSessionStatus(sessionName);
         
         if (status === 'CONNECTED') {
-          // Parar verificação quando conectar
           window.clearInterval(intervalId);
           setStatusCheckInterval(null);
-          showSuccess('WhatsApp conectado com sucesso!', {
-            title: 'Conectado!'
-          });
         }
       } catch (err) {
         console.error('Erro ao verificar status:', err);
