@@ -7,7 +7,7 @@ import {
   Text,
   Input,
   Button,
-  Link,
+  Link
 } from '@chakra-ui/react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, FieldProps } from 'formik';
@@ -26,14 +26,14 @@ export const Login: React.FC = () => {
 
   const initialValues: LoginFormData = {
     email: '',
-    password: '',
+    password: ''
   };
 
   const handleSubmit = async (values: LoginFormData) => {
     try {
       clearError();
       await login(values);
-      
+
       showSuccess('Login realizado com sucesso!');
       navigate('/dashboard');
     } catch (err) {
@@ -44,22 +44,8 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <Flex
-      minH="100vh"
-      bg={bg}
-      align="center"
-      justify="center"
-      py={12}
-      px={4}
-    >
-      <Box
-        w="full"
-        maxW="md"
-        bg={cardBg}
-        rounded="xl"
-        shadow="lg"
-        p={8}
-      >
+    <Flex minH="100vh" bg={bg} align="center" justify="center" py={12} px={4}>
+      <Box w="full" maxW="md" bg={cardBg} rounded="xl" shadow="lg" p={8}>
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
             <ContextaLogo size="xl" />
@@ -75,79 +61,82 @@ export const Login: React.FC = () => {
               onSubmit={handleSubmit}
             >
               {({ isSubmitting, submitCount }) => {
-const hasSubmitted = submitCount > 0;
+                const hasSubmitted = submitCount > 0;
 
-return (
-  <Form>
-  <VStack gap={4}>
-    <Field name="email">
-      {({ field, meta }: FieldProps) => {
-        const showError = hasSubmitted && meta.error;
-        return (
-          <Box w="full">
-            <Input
-              {...field}
-              placeholder="Email"
-              type="email"
-              size="lg"
-              borderColor={showError ? 'red.500' : undefined}
-            />
-            {showError && (
-              <Text color="red.500" fontSize="sm" mt={1}>
-                {meta.error}
-              </Text>
-            )}
-          </Box>
-        );
-      }}
-    </Field>
+                return (
+                  <Form>
+                    <VStack gap={4}>
+                      <Field name="email">
+                        {({ field, meta }: FieldProps) => {
+                          const showError = hasSubmitted && meta.error;
+                          return (
+                            <Box w="full">
+                              <Input
+                                {...field}
+                                placeholder="Email"
+                                type="email"
+                                size="lg"
+                                borderColor={showError ? 'red.500' : undefined}
+                              />
+                              {showError && (
+                                <Text color="red.500" fontSize="sm" mt={1}>
+                                  {meta.error}
+                                </Text>
+                              )}
+                            </Box>
+                          );
+                        }}
+                      </Field>
 
-    <Field name="password">
-      {({ field, meta }: FieldProps) => {
-        const showError = hasSubmitted && meta.error;
-        return (
-          <Box w="full">
-            <Input
-              {...field}
-              placeholder="Senha"
-              type="password"
-              size="lg"
-              borderColor={showError ? 'red.500' : undefined}
-            />
-            {showError && (
-              <Text color="red.500" fontSize="sm" mt={1}>
-                {meta.error}
-              </Text>
-            )}
-          </Box>
-        );
-      }}
-    </Field>
+                      <Field name="password">
+                        {({ field, meta }: FieldProps) => {
+                          const showError = hasSubmitted && meta.error;
+                          return (
+                            <Box w="full">
+                              <Input
+                                {...field}
+                                placeholder="Senha"
+                                type="password"
+                                size="lg"
+                                borderColor={showError ? 'red.500' : undefined}
+                              />
+                              {showError && (
+                                <Text color="red.500" fontSize="sm" mt={1}>
+                                  {meta.error}
+                                </Text>
+                              )}
+                            </Box>
+                          );
+                        }}
+                      </Field>
 
-    <Button
-      type="submit"
-      color="white"
-      size="lg"
-      w="full"
-      loading={isLoading || isSubmitting}
-      loadingText="Entrando..."
-      style={{ background: 'var(--gradient-primary)' }}
-      _hover={{ opacity: 0.95 }}
-    >
-      Entrar
-    </Button>
-  </VStack>
-</Form>
-)
-              }
-              
-              }
+                      <Button
+                        type="submit"
+                        color="white"
+                        size="lg"
+                        w="full"
+                        loading={isLoading || isSubmitting}
+                        loadingText="Entrando..."
+                        style={{ background: 'var(--gradient-primary)' }}
+                        _hover={{ opacity: 0.95 }}
+                      >
+                        Entrar
+                      </Button>
+                    </VStack>
+                  </Form>
+                );
+              }}
             </Formik>
           </Box>
 
           <HStack>
             <Text color="grayBold">Ainda não tem conta?</Text>
-            <Link as={RouterLink} href="/register" color="contexta.500" _hover={{ color: 'contexta.600' }}>
+            <Link
+              as={RouterLink}
+              href="/register"
+              color="contexta.500"
+              _hover={{ color: 'contexta.600' }}
+            >
               Cadastre-se
             </Link>
           </HStack>

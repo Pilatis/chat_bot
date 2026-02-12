@@ -35,9 +35,11 @@ export interface PlanState {
   error: string | null;
 }
 
+export type PlanResult = 'success' | 'failure' | void;
+
 export interface PlanContextType extends PlanState {
-  createPlan: (data: CreatePlanData) => Promise<Plan>;
-  assignPlan: (planId: string) => Promise<UserPlan>;
+  createPlan: (data: CreatePlanData) => Promise<Plan | null>;
+  assignPlan: (planId: string) => Promise<PlanResult>;
   getUserPlan: () => Promise<void>;
   getAllPlans: () => Promise<void>;
   refreshPlans: () => Promise<void>;

@@ -27,12 +27,14 @@ export interface SendMessageData {
   message: string;
 }
 
+export type WhatsAppResult = 'success' | 'failure' | void;
+
 export interface WhatsAppContextType extends WhatsAppState {
-  createSession: (data: CreateSessionData) => Promise<WhatsAppSession>;
+  createSession: (data: CreateSessionData) => Promise<WhatsAppSession | null>;
   getQRCode: (sessionName: string) => Promise<string | null>;
   getSessionStatus: (sessionName: string) => Promise<SocketState | null>;
-  disconnectSession: (sessionName: string) => Promise<void>;
-  sendMessage: (data: SendMessageData) => Promise<boolean>;
+  disconnectSession: (sessionName: string) => Promise<WhatsAppResult>;
+  sendMessage: (data: SendMessageData) => Promise<WhatsAppResult>;
   clearError: () => void;
 }
 

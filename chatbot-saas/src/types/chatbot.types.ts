@@ -31,9 +31,11 @@ export interface ChatbotState {
   stats: ChatStats | null;
 }
 
+export type ChatbotResult = 'success' | 'failure' | void;
+
 export interface ChatbotContextType extends ChatbotState {
   sendMessage: (message: string) => Promise<void>;
-  trainAI: () => Promise<void>;
+  trainAI: () => Promise<ChatbotResult>;
   getChatHistory: (limit?: number) => Promise<void>;
   getChatStats: () => Promise<void>;
   clearMessages: () => void;

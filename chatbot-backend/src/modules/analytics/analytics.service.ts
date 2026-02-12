@@ -627,15 +627,17 @@ export class AnalyticsService {
   }
 
   private async getMostMentionedProduct(companyId: string): Promise<string | undefined> {
-    // Buscar produtos da empresa
-    const products = await prisma.product.findMany({
-      where: { companyId },
-      select: { name: true }
-    });
+    const [products, services] = await Promise.all([
+      prisma.product.findMany({ where: { companyId }, select: { name: true } }),
+      prisma.service.findMany({ where: { companyId }, select: { name: true } })
+    ]);
 
-    if (products.length === 0) return undefined;
+    const names = [
+      ...products.map(p => p.name),
+      ...services.map(s => s.name)
+    ];
+    if (names.length === 0) return undefined;
 
-    // Buscar mensagens do cliente e verificar menções
     const clientMessages = await prisma.message.findMany({
       where: {
         companyId,
@@ -644,20 +646,17 @@ export class AnalyticsService {
       select: { content: true }
     });
 
-    const productMentions: Record<string, number> = {};
-    products.forEach(product => {
-      const mentions = clientMessages.filter(msg =>
-        msg.content.toLowerCase().includes(product.name.toLowerCase())
+    const mentions: Record<string, number> = {};
+    names.forEach(name => {
+      const count = clientMessages.filter(msg =>
+        msg.content.toLowerCase().includes(name.toLowerCase())
       ).length;
-      if (mentions > 0) {
-        productMentions[product.name] = mentions;
-      }
+      if (count > 0) mentions[name] = count;
     });
 
-    if (Object.keys(productMentions).length === 0) return undefined;
+    if (Object.keys(mentions).length === 0) return undefined;
 
-    // Retornar produto mais mencionado
-    const sorted = Object.entries(productMentions).sort(([, a], [, b]) => b - a);
+    const sorted = Object.entries(mentions).sort(([, a], [, b]) => b - a);
     return sorted[0]?.[0];
   }
 

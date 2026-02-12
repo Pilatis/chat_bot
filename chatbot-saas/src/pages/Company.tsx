@@ -7,55 +7,56 @@ import {
   Input,
   Textarea,
   Button,
-  IconButton,
+  IconButton
 } from '@chakra-ui/react';
-import { FiPlus, FiTrash2, FiSave, FiAlertCircle, FiInfo } from 'react-icons/fi';
+import {
+  FiPlus,
+  FiTrash2,
+  FiSave,
+  FiAlertCircle,
+  FiInfo
+} from 'react-icons/fi';
 import { Card } from '../components/Card';
 import { EmptyState } from '../components/ui/empty-state';
 import { AddProductModal } from '../components/company/AddProductModal';
+import { AddServiceModal } from '../components/company/AddServiceModal';
 import { Tooltip } from '../components/ui/tooltip';
 import { useCompany } from '../hooks/useCompany';
 import { useToast } from '../hooks/useToast';
 import { useApi } from '../hooks/use-api';
 import { phoneMask } from '../utils/masks';
-import { CreateProductData } from '../types/company.types';
+import { CreateProductData, CreateServiceData, getMacroCategoryLabel } from '../types/company.types';
 import { AITrainingAidMessage } from '../components/company/AI-training-aid-message';
-import { WhatsAppConnection } from '../components/company/WhatsAppConnection';
-import { useWhatsApp } from '../providers';
-import { FiSend } from 'react-icons/fi';
-
 
 export const Company: React.FC = () => {
-  const { 
-    company, 
-    isLoading, 
-    error, 
-    createOrUpdateCompany, 
-    createProduct, 
+  const {
+    company,
+    isLoading,
+    error,
+    createOrUpdateCompany,
+    createProduct,
     deleteProduct,
+    createService,
+    deleteService,
     isSaving,
-    isProductLoading
+    isProductLoading,
+    isServiceLoading
   } = useCompany();
   const { showSuccess, showError } = useToast();
   const { api } = useApi();
-  const { 
-    sendMessage, 
-    currentSession, 
-    isLoading: isWhatsAppLoading,
-    getSessionStatus
-  } = useWhatsApp();
-  
+
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [isTrained, setIsTrained] = useState(false);
   const [isTraining, setIsTraining] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
-  
-  // Estados para teste de envio de mensagem
-  const [testPhoneNumber, setTestPhoneNumber] = useState('');
-  const [testMessage, setTestMessage] = useState('');
-  const [isSendingTest, setIsSendingTest] = useState(false);
+  const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+
+  const products = company?.products ?? [];
+  const services = company?.services ?? [];
+  const hasProductsOrServices = products.length > 0 || services.length > 0;
+  const loadingProductsOrServices = isProductLoading || isServiceLoading;
 
   // Carregar dados da empresa quando o componente montar
   useEffect(() => {
@@ -66,44 +67,24 @@ export const Company: React.FC = () => {
     }
   }, [company]);
 
-  useEffect(() => {
-    const checkWhatsAppStatus = async () => {
-      if (!company?.id) return;
-
-      const sessionName = `company_${company.id}`;
-      
-      try {
-        await getSessionStatus(sessionName);
-      } catch (err) {
-
-      }
-    };
-
-    // Aguardar um pouco antes de verificar para evitar múltiplas chamadas
-    const timeoutId = setTimeout(() => {
-      checkWhatsAppStatus();
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [company?.id]);
-
   const handleAddProduct = async (productData: CreateProductData) => {
     if (!company) return;
-    
+
     try {
-      await createProduct(productData);
-      showSuccess('Produto adicionado com sucesso!', {
-        title: 'Sucesso!'
-      });
+      const response = await createProduct(productData);
+      if (response?.data?.success) {
+        showSuccess('Produto adicionado com sucesso!', {
+          title: 'Sucesso!'
+        });
+      } else {
+        showError(response.data?.message || 'Erro ao adicionar produto');
+      }
     } catch (err) {
       showError(error || 'Tente novamente', {
         title: 'Erro ao adicionar produto'
       });
-      throw err; // Re-throw para o modal tratar
     }
   };
-
 
   const removeProduct = async (id: string) => {
     try {
@@ -116,15 +97,39 @@ export const Company: React.FC = () => {
     }
   };
 
+  const handleAddService = async (serviceData: CreateServiceData) => {
+    if (!company) return;
+
+    try {
+      await createService(serviceData);
+      showSuccess('Serviço adicionado com sucesso!', { title: 'Sucesso!' });
+    } catch (err) {
+      showError(error || 'Tente novamente', {
+        title: 'Erro ao adicionar serviço'
+      });
+      throw err;
+    }
+  };
+
+  const removeService = async (id: string) => {
+    try {
+      await deleteService(id);
+      showSuccess('Serviço removido!');
+    } catch (err) {
+      showError(error || 'Tente novamente', {
+        title: 'Erro ao remover serviço'
+      });
+    }
+  };
 
   const handleSave = async () => {
     try {
       await createOrUpdateCompany({
         name: companyName,
         description: description,
-        whatsappNumber: whatsappNumber,
+        whatsappNumber: whatsappNumber
       });
-      
+
       showSuccess('Os dados da empresa foram atualizados com sucesso.', {
         title: 'Informações salvas!'
       });
@@ -137,66 +142,34 @@ export const Company: React.FC = () => {
 
   const handleTrain = async () => {
     if (!company?.id) return;
-    
+
     try {
       setIsTraining(true);
-      
+
       // Chamar API de treinamento - isso vai coletar TODOS os produtos e fazer treinamento geral
       const response = await api.post(`/chatbot/${company.id}/train`);
-      
+
       if (response.data?.success) {
         setIsTrained(true);
-        showSuccess('IA treinada com sucesso! O assistente agora conhece todos os seus produtos e pode responder automaticamente via WhatsApp.', {
-          title: 'Treinamento concluído!'
-        });
+        showSuccess(
+          'IA treinada com sucesso! O assistente agora conhece seus produtos e serviços e pode responder automaticamente via WhatsApp.',
+          {
+            title: 'Treinamento concluído!'
+          }
+        );
       } else {
         throw new Error(response.data?.message || 'Erro ao treinar IA');
       }
     } catch (err: any) {
-      showError(err.message || 'Erro ao treinar IA. Verifique se há produtos cadastrados.', {
-        title: 'Erro no treinamento'
-      });
+      showError(
+        err.message ||
+          'Erro ao treinar IA. Verifique se há produtos ou serviços cadastrados.',
+        {
+          title: 'Erro no treinamento'
+        }
+      );
     } finally {
       setIsTraining(false);
-    }
-  };
-
-  const handleSendTestMessage = async () => {
-    if (!currentSession?.sessionName) {
-      showError('Conecte o WhatsApp primeiro antes de enviar mensagens de teste', {
-        title: 'WhatsApp não conectado'
-      });
-      return;
-    }
-
-    if (!testPhoneNumber || !testMessage) {
-      showError('Preencha o número de telefone e a mensagem', {
-        title: 'Campos obrigatórios'
-      });
-      return;
-    }
-
-    try {
-      setIsSendingTest(true);
-      
-      await sendMessage({
-        sessionName: currentSession.sessionName,
-        phoneNumber: testPhoneNumber,
-        message: testMessage
-      });
-
-      showSuccess('Mensagem de teste enviada com sucesso!', {
-        title: 'Mensagem enviada'
-      });
-      
-      // Limpar campos após envio
-      setTestMessage('');
-    } catch (err: any) {
-      showError(err.message || 'Erro ao enviar mensagem de teste', {
-        title: 'Erro ao enviar'
-      });
-    } finally {
-      setIsSendingTest(false);
     }
   };
 
@@ -239,7 +212,10 @@ export const Company: React.FC = () => {
           <Card>
             <EmptyState
               title="Erro ao carregar dados"
-              description={error || "Não foi possível carregar as informações da empresa. Tente novamente."}
+              description={
+                error ||
+                'Não foi possível carregar as informações da empresa. Tente novamente.'
+              }
               icon={<FiAlertCircle size={48} color="#ef4444" />}
             />
           </Card>
@@ -262,62 +238,92 @@ export const Company: React.FC = () => {
 
         <Card>
           <VStack gap={6} align="stretch">
+            <Text fontSize="lg" fontWeight="semibold" color="grayBold">
+              Dados da Empresa
+            </Text>
             <Box>
-              <Text mb={2} fontWeight="medium">Nome da Empresa</Text>
+              <Text mb={2} fontWeight="medium">
+                Nome da Empresa
+              </Text>
               <Input
                 placeholder="Digite o nome da sua empresa"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 size="lg"
-                disabled={isSaving || isProductLoading}
+                disabled={isSaving}
               />
             </Box>
 
             <Box>
-              <Text mb={2} fontWeight="medium">Descrição da Empresa</Text>
+              <Text mb={2} fontWeight="medium">
+                Descrição da Empresa
+              </Text>
               <Textarea
                 placeholder="Descreva sua empresa, serviços e diferenciais"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 resize="vertical"
-                disabled={isSaving || isProductLoading}
+                disabled={isSaving}
               />
             </Box>
 
             <Box>
-              <Text mb={2} fontWeight="medium">Número do WhatsApp</Text>
+              <Text mb={2} fontWeight="medium">
+                Número do WhatsApp
+              </Text>
               <Input
                 placeholder="(11) 99999-9999"
                 value={phoneMask(whatsappNumber)}
                 onChange={(e) => setWhatsappNumber(phoneMask(e.target.value))}
                 size="lg"
-                disabled={isSaving || isProductLoading}
+                disabled={isSaving}
               />
             </Box>
 
-            <Box h="1px" bg="gray.200" />
+            <Button
+              onClick={handleSave}
+              bg="contexta.500"
+              color="white"
+              size="lg"
+              _hover={{ bg: 'contexta.600' }}
+              loading={isSaving}
+              disabled={isSaving}
+              alignSelf="flex-start"
+            >
+              <FiSave />
+              Salvar Informações
+            </Button>
+          </VStack>
+        </Card>
+
+        <Card>
+          <VStack gap={6} align="stretch">
+            <Text fontSize="lg" fontWeight="semibold" color="grayBold">
+              Produtos e Serviços
+            </Text>
 
             <Box>
               <HStack justify="space-between" mb={4}>
                 <HStack gap={2} align="center">
                   <Text fontSize="lg" fontWeight="semibold">
-                    Produtos/Serviços
+                    Produtos
                   </Text>
                   <Tooltip
                     content={
                       <VStack align="start" gap={2} maxW="300px">
                         <Text fontSize="sm" fontWeight="medium">
-                          Por que cadastrar produtos/serviços?
+                          Por que cadastrar produtos?
                         </Text>
                         <Text fontSize="xs">
-                          Ao cadastrar seus produtos e serviços aqui, a IA do assistente será treinada com essas informações. 
-                          Quando clientes perguntarem sobre seus produtos via WhatsApp, o assistente poderá responder automaticamente 
-                          com detalhes, preços e características, melhorando o atendimento e aumentando as vendas.
+                          Cadastre seus produtos para a IA do assistente. Quando
+                          clientes perguntarem via WhatsApp, o assistente poderá
+                          responder com detalhes, preços e características.
                         </Text>
                       </VStack>
                     }
                     showArrow
+                    portalled={false}
                   >
                     <IconButton
                       aria-label="Informação sobre produtos"
@@ -338,7 +344,7 @@ export const Company: React.FC = () => {
                   variant="outline"
                   _hover={{ bg: 'contexta.600' }}
                   loading={isProductLoading}
-                  disabled={isProductLoading || isSaving}
+                  disabled={loadingProductsOrServices || isSaving}
                 >
                   <FiPlus />
                   Adicionar Produto
@@ -346,7 +352,7 @@ export const Company: React.FC = () => {
               </HStack>
 
               <VStack gap={4} align="stretch">
-                {company?.products?.map((product, index) => (
+                {products.map((product, index) => (
                   <Box
                     key={product.id}
                     p={4}
@@ -356,7 +362,9 @@ export const Company: React.FC = () => {
                     bg="gray.50"
                   >
                     <HStack justify="space-between" mb={3}>
-                      <Text fontWeight="medium">{product.name || `Produto ${index + 1}`}</Text>
+                      <Text fontWeight="medium">
+                        {product.name || `Produto ${index + 1}`}
+                      </Text>
                       <HStack gap={2}>
                         <IconButton
                           aria-label="Remover produto"
@@ -365,15 +373,25 @@ export const Company: React.FC = () => {
                           color="red.500"
                           _hover={{ bg: 'red.50' }}
                           onClick={() => removeProduct(product.id)}
-                          disabled={isProductLoading || isSaving}
+                          disabled={loadingProductsOrServices || isSaving}
                           loading={isProductLoading}
                         >
                           <FiTrash2 />
                         </IconButton>
                       </HStack>
                     </HStack>
-                    
+
                     <VStack gap={3} align="stretch">
+                      {product.category && (
+                        <Box>
+                          <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                            Categoria
+                          </Text>
+                          <Text fontSize="sm" color="gray.600">
+                            {getMacroCategoryLabel(product.category)}
+                          </Text>
+                        </Box>
+                      )}
                       <Box>
                         <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
                           Descrição
@@ -382,24 +400,26 @@ export const Company: React.FC = () => {
                           {product.description || 'Sem descrição'}
                         </Text>
                       </Box>
-                      {product.price !== null && product.price !== undefined && product.price > 0 && (
-                        <Box>
-                          <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
-                            Preço
-                          </Text>
-                          <Text fontSize="sm" color="gray.600" fontWeight="semibold">
-                            R$ {product.price.toFixed(2).replace('.', ',')}
-                          </Text>
-                        </Box>
-                      )}
+                      {product.price !== null &&
+                        product.price !== undefined &&
+                        product.price > 0 && (
+                          <Box>
+                            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                              Preço
+                            </Text>
+                            <Text fontSize="sm" color="gray.600" fontWeight="semibold">
+                              R$ {product.price.toFixed(2).replace('.', ',')}
+                            </Text>
+                          </Box>
+                        )}
                     </VStack>
                   </Box>
                 ))}
 
-                {(!company?.products || company.products.length === 0) && (
+                {products.length === 0 && (
                   <EmptyState
                     title="Nenhum produto adicionado"
-                    description="Adicione produtos ou serviços para treinar o assistente"
+                    description="Adicione produtos para treinar o assistente"
                     icon={<FiPlus size={32} color="#9ca3af" />}
                   />
                 )}
@@ -408,106 +428,151 @@ export const Company: React.FC = () => {
 
             <Box h="1px" bg="gray.200" />
 
-            <WhatsAppConnection />
-
-            <Box h="1px" bg="gray.200" />
-
             <Box>
-              <Text fontSize="lg" fontWeight="semibold" mb={4}>
-                Teste de Envio de Mensagem
-              </Text>
-              <Text fontSize="sm" color="gray.600" mb={4}>
-                Envie uma mensagem de teste para verificar se o WhatsApp está funcionando corretamente
-              </Text>
-              
-              <VStack gap={4} align="stretch">
-                <Box>
-                  <Text mb={2} fontWeight="medium" fontSize="sm">
-                    Número de Telefone
+              <HStack justify="space-between" mb={4}>
+                <HStack gap={2} align="center">
+                  <Text fontSize="lg" fontWeight="semibold">
+                    Serviços
                   </Text>
-                  <Input
-                    placeholder="11999999999 ou 5511999999999"
-                    value={testPhoneNumber}
-                    onChange={(e) => setTestPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                    size="lg"
-                    disabled={isSendingTest || isWhatsAppLoading || !currentSession?.isConnected}
-                  />
-                  <Text fontSize="xs" color="gray.500" mt={1}>
-                    Digite apenas números (ex: 11999999999)
-                  </Text>
-                </Box>
-
-                <Box>
-                  <Text mb={2} fontWeight="medium" fontSize="sm">
-                    Mensagem
-                  </Text>
-                  <Textarea
-                    placeholder="Digite sua mensagem de teste aqui..."
-                    value={testMessage}
-                    onChange={(e) => setTestMessage(e.target.value)}
-                    rows={4}
-                    resize="vertical"
-                    disabled={isSendingTest || isWhatsAppLoading || !currentSession?.isConnected}
-                  />
-                </Box>
-
-                <Button
-                  onClick={handleSendTestMessage}
-                  colorScheme="blue"
-                  size="lg"
-                  loading={isSendingTest}
-                  disabled={!currentSession?.isConnected || !testPhoneNumber || !testMessage || isSendingTest || isWhatsAppLoading}
-                >
-                  <HStack gap={2}>
-                    <FiSend />
-                    <Text>Enviar Mensagem de Teste</Text>
-                  </HStack>
-                </Button>
-
-                {!currentSession?.isConnected && (
-                  <Box
-                    p={3}
-                    bg="orange.50"
-                    border="1px"
-                    borderColor="orange.200"
-                    borderRadius="md"
+                  <Tooltip
+                    content={
+                      <VStack align="start" gap={2} maxW="300px">
+                        <Text fontSize="sm" fontWeight="medium">
+                          Por que cadastrar serviços?
+                        </Text>
+                        <Text fontSize="xs">
+                          Cadastre seus serviços para a IA do assistente. Quando
+                          clientes perguntarem via WhatsApp, o assistente poderá
+                          responder com detalhes, preços e como são entregues.
+                        </Text>
+                      </VStack>
+                    }
+                    showArrow
+                    portalled={false}
                   >
-                    <Text fontSize="sm" color="orange.700">
-                      ⚠️ Conecte o WhatsApp acima antes de enviar mensagens de teste
-                    </Text>
+                    <IconButton
+                      aria-label="Informação sobre serviços"
+                      size="xs"
+                      variant="ghost"
+                      color="gray.500"
+                      _hover={{ color: 'contexta.500', bg: 'gray.100' }}
+                    >
+                      <FiInfo />
+                    </IconButton>
+                  </Tooltip>
+                </HStack>
+                <Button
+                  onClick={() => setIsAddServiceModalOpen(true)}
+                  size="sm"
+                  bg="contexta.500"
+                  color="white"
+                  variant="outline"
+                  _hover={{ bg: 'contexta.600' }}
+                  loading={isServiceLoading}
+                  disabled={loadingProductsOrServices || isSaving}
+                >
+                  <FiPlus />
+                  Adicionar Serviço
+                </Button>
+              </HStack>
+
+              <VStack gap={4} align="stretch">
+                {services.map((service, index) => (
+                  <Box
+                    key={service.id}
+                    p={4}
+                    border="1px"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    bg="gray.50"
+                  >
+                    <HStack justify="space-between" mb={3}>
+                      <Text fontWeight="medium">
+                        {service.name || `Serviço ${index + 1}`}
+                      </Text>
+                      <HStack gap={2}>
+                        <IconButton
+                          aria-label="Remover serviço"
+                          size="sm"
+                          variant="ghost"
+                          color="red.500"
+                          _hover={{ bg: 'red.50' }}
+                          onClick={() => removeService(service.id)}
+                          disabled={loadingProductsOrServices || isSaving}
+                          loading={isServiceLoading}
+                        >
+                          <FiTrash2 />
+                        </IconButton>
+                      </HStack>
+                    </HStack>
+
+                    <VStack gap={3} align="stretch">
+                      {service.category && (
+                        <Box>
+                          <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                            Categoria
+                          </Text>
+                          <Text fontSize="sm" color="gray.600">
+                            {getMacroCategoryLabel(service.category)}
+                          </Text>
+                        </Box>
+                      )}
+                      <Box>
+                        <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                          Descrição
+                        </Text>
+                        <Text fontSize="sm" color="gray.600">
+                          {service.description || 'Sem descrição'}
+                        </Text>
+                      </Box>
+                      {service.price !== null &&
+                        service.price !== undefined &&
+                        service.price > 0 && (
+                          <Box>
+                            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                              Preço
+                            </Text>
+                            <Text fontSize="sm" color="gray.600" fontWeight="semibold">
+                              R$ {service.price.toFixed(2).replace('.', ',')}
+                            </Text>
+                          </Box>
+                        )}
+                    </VStack>
                   </Box>
+                ))}
+
+                {services.length === 0 && (
+                  <EmptyState
+                    title="Nenhum serviço adicionado"
+                    description="Adicione serviços para treinar o assistente"
+                    icon={<FiPlus size={32} color="#9ca3af" />}
+                  />
                 )}
               </VStack>
             </Box>
 
+            <Box h="1px" bg="gray.200" />
+
             <AITrainingAidMessage />
 
-            <HStack gap={4}>
-              <Button
-                onClick={handleSave}
-                bg="contexta.500"
-                color="white"
-                size="lg"
-                _hover={{ bg: 'contexta.600' }}
-                loading={isSaving}
-                disabled={isSaving || isProductLoading}
-              >
-                <FiSave />
-                Salvar Informações
-              </Button>
-              
-              <Button
-                onClick={handleTrain}
-                bg="green.500"
-                color="white"
-                size="lg"
-                _hover={{ bg: 'green.600' }}
-                disabled={!companyName || !description || !company?.products || company.products.length === 0 || isSaving || isProductLoading || isTraining}
-                loading={isTraining}
-              >
-                {isTrained ? 'Retreinar IA' : 'Treinar IA'}
-              </Button>
-            </HStack>
+            <Button
+              onClick={handleTrain}
+              bg="green.500"
+              color="white"
+              size="lg"
+              _hover={{ bg: 'green.600' }}
+              disabled={
+                !companyName ||
+                !description ||
+                !hasProductsOrServices ||
+                loadingProductsOrServices ||
+                isTraining
+              }
+              loading={isTraining}
+              alignSelf="flex-start"
+            >
+              {isTrained ? 'Retreinar IA' : 'Treinar IA'}
+            </Button>
 
             {isTrained && (
               <Box
@@ -518,7 +583,8 @@ export const Company: React.FC = () => {
                 borderRadius="md"
               >
                 <Text color="green.700" fontWeight="medium">
-                  ✅ IA treinada com sucesso! O assistente está pronto para atender seus clientes.
+                  ✅ IA treinada com sucesso! O assistente está pronto para
+                  atender seus clientes.
                 </Text>
               </Box>
             )}
@@ -532,7 +598,13 @@ export const Company: React.FC = () => {
         onSave={handleAddProduct}
         isLoading={isProductLoading}
       />
+
+      <AddServiceModal
+        isOpen={isAddServiceModalOpen}
+        onClose={() => setIsAddServiceModalOpen(false)}
+        onSave={handleAddService}
+        isLoading={isServiceLoading}
+      />
     </Box>
   );
 };
-

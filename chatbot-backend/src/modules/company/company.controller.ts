@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { CompanyService, CreateCompanyData, CreateProductData, UpdateProductData } from './company.service';
+import { CompanyService, CreateCompanyData, CreateProductData, UpdateProductData, CreateServiceData, UpdateServiceData } from './company.service';
 import { successResponse, errorResponse } from '../../utils/response';
 import { AuthenticatedRequest } from '../../middlewares/authMiddleware';
 
@@ -79,7 +79,7 @@ export class CompanyController {
     try {
       const userId = req.user?.userId;
       const { companyId } = req.params;
-      const { name, description, price }: CreateProductData = req.body;
+      const { name, description, price, category }: CreateProductData = req.body;
 
       if (!userId) {
         return errorResponse(res, 'Usuário não autenticado', 401);
@@ -93,10 +93,15 @@ export class CompanyController {
         return errorResponse(res, 'Nome do produto é obrigatório', 400);
       }
 
+      if (!category) {
+        return errorResponse(res, 'Categoria do produto é obrigatória', 400);
+      }
+
       const product = await this.companyService.createProduct(companyId, userId, {
         name,
         description: description || '',
-        price: price || 0
+        price: price ?? 0,
+        category
       });
 
       return successResponse(res, 'Produto criado com sucesso', product, 201);
@@ -109,7 +114,7 @@ export class CompanyController {
     try {
       const userId = req.user?.userId;
       const { productId } = req.params;
-      const { name, description, price }: UpdateProductData = req.body;
+      const { name, description, price, category }: UpdateProductData = req.body;
 
       if (!userId) {
         return errorResponse(res, 'Usuário não autenticado', 401);
@@ -122,7 +127,8 @@ export class CompanyController {
       const product = await this.companyService.updateProduct(productId, userId, {
         name,
         description,
-        price
+        price,
+        category
       });
 
       return successResponse(res, 'Produto atualizado com sucesso', product);
@@ -145,6 +151,108 @@ export class CompanyController {
       }
 
       const result = await this.companyService.deleteProduct(productId, userId);
+      return successResponse(res, result.message, null);
+    } catch (error: any) {
+      return errorResponse(res, error.message, 500);
+    }
+  };
+
+  getServices = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      const { companyId } = req.params;
+
+      if (!userId) {
+        return errorResponse(res, 'Usuário não autenticado', 401);
+      }
+
+      if (!companyId) {
+        return errorResponse(res, 'ID da empresa é obrigatório', 400);
+      }
+
+      const services = await this.companyService.getServices(companyId, userId);
+      return successResponse(res, 'Serviços obtidos com sucesso', services);
+    } catch (error: any) {
+      return errorResponse(res, error.message, 500);
+    }
+  };
+
+  createService = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      const { companyId } = req.params;
+      const { name, description, price, category }: CreateServiceData = req.body;
+
+      if (!userId) {
+        return errorResponse(res, 'Usuário não autenticado', 401);
+      }
+
+      if (!companyId) {
+        return errorResponse(res, 'ID da empresa é obrigatório', 400);
+      }
+
+      if (!name) {
+        return errorResponse(res, 'Nome do serviço é obrigatório', 400);
+      }
+
+      if (!category) {
+        return errorResponse(res, 'Categoria do serviço é obrigatória', 400);
+      }
+
+      const service = await this.companyService.createService(companyId, userId, {
+        name,
+        description: description || '',
+        price: price ?? 0,
+        category
+      });
+
+      return successResponse(res, 'Serviço criado com sucesso', service, 201);
+    } catch (error: any) {
+      return errorResponse(res, error.message, 500);
+    }
+  };
+
+  updateService = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      const { serviceId } = req.params;
+      const { name, description, price, category }: UpdateServiceData = req.body;
+
+      if (!userId) {
+        return errorResponse(res, 'Usuário não autenticado', 401);
+      }
+
+      if (!serviceId) {
+        return errorResponse(res, 'ID do serviço é obrigatório', 400);
+      }
+
+      const service = await this.companyService.updateService(serviceId, userId, {
+        name,
+        description,
+        price,
+        category
+      });
+
+      return successResponse(res, 'Serviço atualizado com sucesso', service);
+    } catch (error: any) {
+      return errorResponse(res, error.message, 500);
+    }
+  };
+
+  deleteService = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      const { serviceId } = req.params;
+
+      if (!userId) {
+        return errorResponse(res, 'Usuário não autenticado', 401);
+      }
+
+      if (!serviceId) {
+        return errorResponse(res, 'ID do serviço é obrigatório', 400);
+      }
+
+      const result = await this.companyService.deleteService(serviceId, userId);
       return successResponse(res, result.message, null);
     } catch (error: any) {
       return errorResponse(res, error.message, 500);

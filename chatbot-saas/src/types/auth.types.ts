@@ -43,9 +43,11 @@ export interface AuthState {
   error: string | null;
 }
 
+export type AuthResult = 'success' | 'failure' | void;
+
 export interface AuthContextType extends AuthState {
-  login: (data: LoginData) => Promise<void>;
-  register: (data: RegisterData) => Promise<string>;
+  login: (data: LoginData) => Promise<AuthResult>;
+  register: (data: RegisterData) => Promise<AuthResult>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   clearError: () => void;

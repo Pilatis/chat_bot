@@ -9,7 +9,7 @@ import { Register } from '../pages/Register';
 import { Dashboard } from '../pages/Dashboard';
 import { Company } from '../pages/Company';
 import { Chatbot } from '../pages/Chatbot';
-import { Messages } from '../pages/Messages';
+import { WhatsApp } from '../pages/WhatsApp';
 import { Analytics } from '../pages/Analytics';
 import { Plans } from '../pages/Plans';
 import { ServerUnavailable } from '../pages/ServerUnavailable';
@@ -144,11 +144,11 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path="/messages"
+        path="/whatsapp"
         element={
-          <ProtectedRoute>
-            <Messages />
-          </ProtectedRoute>
+          <CompanyRoute>
+            <WhatsApp />
+          </CompanyRoute>
         }
       />
       <Route
@@ -167,6 +167,7 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/messages" element={<Navigate to="/whatsapp" replace />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

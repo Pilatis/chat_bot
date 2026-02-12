@@ -5,23 +5,23 @@ import {
   Button,
   CloseButton,
 } from '@chakra-ui/react';
-import { CreateProductData } from '../../../types/company.types';
-import { AddProductModalForm } from './form';
+import { CreateServiceData } from '../../../types/company.types';
+import { AddServiceModalForm } from './form';
 
-interface AddProductModalProps {
+interface AddServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: CreateProductData) => Promise<void>;
+  onSave: (data: CreateServiceData) => Promise<void>;
   isLoading?: boolean;
 }
 
-export const AddProductModal: React.FC<AddProductModalProps> = ({
+export const AddServiceModal: React.FC<AddServiceModalProps> = ({
   isOpen,
   onClose,
   onSave,
   isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<CreateProductData>({
+  const [formData, setFormData] = useState<CreateServiceData>({
     name: '',
     description: '',
     price: undefined,
@@ -29,9 +29,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleChange = (field: keyof CreateProductData, value: string | number | undefined) => {
+  const handleChange = (field: keyof CreateServiceData, value: string | number | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Limpar erro do campo quando o usuário começar a digitar
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -41,7 +40,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name || formData.name.trim() === '') {
-      newErrors.name = 'Nome do produto é obrigatório';
+      newErrors.name = 'Nome do serviço é obrigatório';
     }
 
     if (!formData.category) {
@@ -63,11 +62,10 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
     try {
       await onSave(formData);
-      // Limpar formulário após salvar
       resetForm();
       onClose();
-    } catch (error) {
-      // Erro será tratado pelo componente pai
+    } catch {
+      // Erro tratado pelo componente pai
     }
   };
 
@@ -86,7 +84,6 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     onClose();
   };
 
-  // Resetar formulário quando o modal fechar
   useEffect(() => {
     if (!isOpen) {
       resetForm();
@@ -103,14 +100,14 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       <Dialog.Positioner>
         <Dialog.Content maxW="600px">
           <Dialog.Header>
-            <Dialog.Title>Adicionar Produto</Dialog.Title>
+            <Dialog.Title>Adicionar Serviço</Dialog.Title>
             <Dialog.CloseTrigger asChild>
-                    <CloseButton size="sm" />
-                  </Dialog.CloseTrigger>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
           </Dialog.Header>
 
           <Dialog.Body>
-            <AddProductModalForm
+            <AddServiceModalForm
               formData={formData}
               errors={errors}
               isLoading={isLoading}
@@ -135,7 +132,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                 disabled={isLoading}
                 _hover={{ bg: 'contexta.600' }}
               >
-                Adicionar Produto
+                Adicionar Serviço
               </Button>
             </HStack>
           </Dialog.Footer>
@@ -144,4 +141,3 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     </Dialog.Root>
   );
 };
-

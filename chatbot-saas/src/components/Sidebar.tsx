@@ -16,6 +16,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
 } from 'react-icons/fi';
+import { SiWhatsapp } from 'react-icons/si';
 import { Link, useLocation } from 'react-router-dom';
 import { ContextaLogo } from './ContextaLogo';
 
@@ -106,8 +107,8 @@ const SidebarContent = ({ onClose, isCollapsed, onToggle }: {
           <NavItem icon={FiMessageSquare} to="/chatbot" onClose={onClose} isCollapsed={isCollapsed}>
             Assistente
           </NavItem>
-          <NavItem icon={FiMessageSquare} to="/messages" onClose={onClose} isCollapsed={isCollapsed}>
-            Mensagens
+          <NavItem icon={SiWhatsapp} to="/whatsapp" onClose={onClose} isCollapsed={isCollapsed}>
+            WhatsApp
           </NavItem>
           <NavItem icon={FiBarChart} to="/analytics" onClose={onClose} isCollapsed={isCollapsed}>
             Analytics

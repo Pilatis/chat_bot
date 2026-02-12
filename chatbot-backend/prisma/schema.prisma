@@ -53,6 +53,7 @@ model Company {
   messageLogs        MessageLog[]
   messages           Message[]
   products           Product[]
+  services           Service[]
   subscriptions      Subscription[]
   trainingData       TrainingData[]
 
@@ -60,16 +61,31 @@ model Company {
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String         @id @default(uuid())
   name        String
   description String?
   price       Float?
+  category    MacroCategory  @default(OUTROS)
   companyId   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("products")
+}
+
+model Service {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  price       Float?
+  category    MacroCategory
+  companyId   String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("services")
 }
 
 model Message {
@@ -343,4 +359,17 @@ enum MessageSource {
   API
   TEST
   SYSTEM
+}
+
+enum MacroCategory {
+  TECNOLOGIA
+  SAUDE_E_BEM_ESTAR
+  EDUCACAO
+  CONSULTORIA_E_SERVICOS_PROFISSIONAIS
+  COMERCIO_E_VAREJO
+  INDUSTRIA_E_PRODUCAO
+  SERVICOS_OPERACIONAIS
+  FINANCEIRO
+  IMOBILIARIO
+  OUTROS
 }

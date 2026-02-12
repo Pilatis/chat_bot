@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, MacroCategory } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -18,12 +18,28 @@ export interface CreateProductData {
   name: string;
   description?: string;
   price?: number;
+  category: MacroCategory;
 }
 
 export interface UpdateProductData {
   name?: string | undefined;
   description?: string | undefined;
   price?: number | undefined;
+  category?: MacroCategory | undefined;
+}
+
+export interface CreateServiceData {
+  name: string;
+  description?: string;
+  price?: number;
+  category: MacroCategory;
+}
+
+export interface UpdateServiceData {
+  name?: string | undefined;
+  description?: string | undefined;
+  price?: number | undefined;
+  category?: MacroCategory | undefined;
 }
 
 export class CompanyService {
@@ -34,10 +50,14 @@ export class CompanyService {
         products: {
           orderBy: { createdAt: 'desc' }
         },
+        services: {
+          orderBy: { createdAt: 'desc' }
+        },
         _count: {
           select: {
             products: true,
-            messages: true
+            messages: true,
+            services: true
           }
         }
       }
@@ -65,10 +85,14 @@ export class CompanyService {
           products: {
             orderBy: { createdAt: 'desc' }
           },
+          services: {
+            orderBy: { createdAt: 'desc' }
+          },
           _count: {
             select: {
               products: true,
-              messages: true
+              messages: true,
+              services: true
             }
           }
         }
@@ -88,10 +112,14 @@ export class CompanyService {
           products: {
             orderBy: { createdAt: 'desc' }
           },
+          services: {
+            orderBy: { createdAt: 'desc' }
+          },
           _count: {
             select: {
               products: true,
-              messages: true
+              messages: true,
+              services: true
             }
           }
         }
@@ -120,7 +148,6 @@ export class CompanyService {
   }
 
   async createProduct(companyId: string, userId: string, data: CreateProductData) {
-    // Verificar se a empresa pertence ao usuário
     const company = await prisma.company.findFirst({
       where: { id: companyId, ownerId: userId }
     });
@@ -131,7 +158,10 @@ export class CompanyService {
 
     const product = await prisma.product.create({
       data: {
-        ...data,
+        name: data.name,
+        description: data.description ?? null,
+        price: data.price ?? null,
+        category: data.category,
         companyId
       }
     });
@@ -154,10 +184,11 @@ export class CompanyService {
       throw new Error('Produto não encontrado ou não pertence ao usuário');
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.price !== undefined) updateData.price = data.price;
+    if (data.category !== undefined) updateData.category = data.category;
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
@@ -189,6 +220,94 @@ export class CompanyService {
     return { message: 'Produto deletado com sucesso' };
   }
 
+  async getServices(companyId: string, userId: string) {
+    const company = await prisma.company.findFirst({
+      where: { id: companyId, ownerId: userId }
+    });
+
+    if (!company) {
+      throw new Error('Empresa não encontrada ou não pertence ao usuário');
+    }
+
+    const services = await prisma.service.findMany({
+      where: { companyId },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return services;
+  }
+
+  async createService(companyId: string, userId: string, data: CreateServiceData) {
+    const company = await prisma.company.findFirst({
+      where: { id: companyId, ownerId: userId }
+    });
+
+    if (!company) {
+      throw new Error('Empresa não encontrada ou não pertence ao usuário');
+    }
+
+    const service = await prisma?.service?.create({
+      data: {
+        name: data.name,
+        description: data.description ?? null,
+        price: data.price ?? null,
+        category: data.category,
+        companyId
+      }
+    });
+
+    return service;
+  }
+
+  async updateService(serviceId: string, userId: string, data: UpdateServiceData) {
+    const service = await prisma.service.findFirst({
+      where: {
+        id: serviceId,
+        company: {
+          ownerId: userId
+        }
+      }
+    });
+
+    if (!service) {
+      throw new Error('Serviço não encontrado ou não pertence ao usuário');
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.price !== undefined) updateData.price = data.price;
+    if (data.category !== undefined) updateData.category = data.category;
+
+    const updatedService = await prisma.service.update({
+      where: { id: serviceId },
+      data: updateData
+    });
+
+    return updatedService;
+  }
+
+  async deleteService(serviceId: string, userId: string) {
+    const service = await prisma.service.findFirst({
+      where: {
+        id: serviceId,
+        company: {
+          ownerId: userId
+        }
+      }
+    });
+
+    if (!service) {
+      throw new Error('Serviço não encontrado ou não pertence ao usuário');
+    }
+
+    await prisma.service.delete({
+      where: { id: serviceId }
+    });
+
+    return { message: 'Serviço deletado com sucesso' };
+  }
+
   async getCompanyStats(companyId: string, userId: string) {
     // Verificar se a empresa pertence ao usuário
     const company = await prisma.company.findFirst({
@@ -205,10 +324,18 @@ export class CompanyService {
         _count: {
           select: {
             products: true,
-            messages: true
+            messages: true,
+            services: true
           }
         },
         products: {
+          select: {
+            id: true,
+            name: true,
+            price: true
+          }
+        },
+        services: {
           select: {
             id: true,
             name: true,

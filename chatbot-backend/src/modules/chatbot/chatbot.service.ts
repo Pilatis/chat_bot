@@ -73,7 +73,8 @@ export class ChatbotService {
     const company = await prisma.company.findFirst({
       where: { id: companyId, ownerId: userId },
       include: {
-        products: true
+        products: true,
+        services: true
       }
     });
 
@@ -209,10 +210,17 @@ export class ChatbotService {
 
     try {
       // Prepara contexto completo
+      const productsBlock = company.products.length > 0
+        ? `Produtos:\n${company.products.map(p => `- ${p.name}: ${p.description || ''} (R$ ${p.price || 0})`).join('\n')}`
+        : '';
+      const servicesBlock = company.services.length > 0
+        ? `Serviços:\n${company.services.map(s => `- ${s.name}: ${s.description || ''} (R$ ${s.price || 0})`).join('\n')}`
+        : '';
       const fullContext = [
         knowledgeContext && `Conhecimento da Empresa:\n${knowledgeContext}`,
         memoryContext && `Memórias do Cliente:\n${memoryContext}`,
-        company.products.length > 0 && `Produtos:\n${company.products.map(p => `- ${p.name}: ${p.description || ''} (R$ ${p.price || 0})`).join('\n')}`
+        productsBlock,
+        servicesBlock
       ].filter(Boolean).join('\n\n');
 
       // Usa função de IA existente (pode ser substituída por OpenAI)
@@ -224,6 +232,11 @@ export class ChatbotService {
           name: product.name,
           description: product.description || '',
           price: product.price || 0
+        })),
+        services: company.services.map(service => ({
+          name: service.name,
+          description: service.description || '',
+          price: service.price || 0
         }))
       };
 
@@ -306,11 +319,11 @@ export class ChatbotService {
   }
 
   async trainAI(companyId: string, userId: string): Promise<{ message: string; trainedData: any }> {
-    // Verificar se a empresa pertence ao usuário
     const company = await prisma.company.findFirst({
       where: { id: companyId, ownerId: userId },
       include: {
-        products: true
+        products: true,
+        services: true
       }
     });
 
@@ -318,7 +331,6 @@ export class ChatbotService {
       throw new Error('Empresa não encontrada ou não pertence ao usuário');
     }
 
-    // Preparar dados para treinamento
     const trainingData: TrainingData = {
       companyName: company.name,
       companyDescription: company.description || '',
@@ -327,6 +339,11 @@ export class ChatbotService {
         name: product.name,
         description: product.description || '',
         price: product.price || 0
+      })),
+      services: company.services.map(service => ({
+        name: service.name,
+        description: service.description || '',
+        price: service.price || 0
       }))
     };
 
