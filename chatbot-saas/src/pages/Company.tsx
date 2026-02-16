@@ -23,10 +23,12 @@ import { AddServiceModal } from '../components/company/AddServiceModal';
 import { Tooltip } from '../components/ui/tooltip';
 import { useCompany } from '../hooks/useCompany';
 import { useToast } from '../hooks/useToast';
-import { useApi } from '../hooks/use-api';
 import { phoneMask } from '../utils/masks';
-import { CreateProductData, CreateServiceData, getMacroCategoryLabel } from '../types/company.types';
-import { AITrainingAidMessage } from '../components/company/AI-training-aid-message';
+import {
+  CreateProductData,
+  CreateServiceData,
+  getMacroCategoryLabel
+} from '../types/company.types';
 
 export const Company: React.FC = () => {
   const {
@@ -43,19 +45,14 @@ export const Company: React.FC = () => {
     isServiceLoading
   } = useCompany();
   const { showSuccess, showError } = useToast();
-  const { api } = useApi();
-
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [isTrained, setIsTrained] = useState(false);
-  const [isTraining, setIsTraining] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
 
   const products = company?.products ?? [];
   const services = company?.services ?? [];
-  const hasProductsOrServices = products.length > 0 || services.length > 0;
   const loadingProductsOrServices = isProductLoading || isServiceLoading;
 
   // Só permite adicionar produtos/serviços quando a empresa tiver sido salva com nome
@@ -102,39 +99,6 @@ export const Company: React.FC = () => {
       description: description,
       whatsappNumber: whatsappNumber
     });
-  };
-
-  const handleTrain = async () => {
-    if (!company?.id) return;
-
-    try {
-      setIsTraining(true);
-
-      // Chamar API de treinamento - isso vai coletar TODOS os produtos e fazer treinamento geral
-      const response = await api.post(`/chatbot/${company.id}/train`);
-
-      if (response.data?.success) {
-        setIsTrained(true);
-        showSuccess(
-          'IA treinada com sucesso! O assistente agora conhece seus produtos e serviços e pode responder automaticamente via WhatsApp.',
-          {
-            title: 'Treinamento concluído!'
-          }
-        );
-      } else {
-        throw new Error(response.data?.message || 'Erro ao treinar IA');
-      }
-    } catch (err: any) {
-      showError(
-        err.message ||
-          'Erro ao treinar IA. Verifique se há produtos ou serviços cadastrados.',
-        {
-          title: 'Erro no treinamento'
-        }
-      );
-    } finally {
-      setIsTraining(false);
-    }
   };
 
   // Loading inicial - carregando dados da empresa
@@ -276,15 +240,24 @@ export const Company: React.FC = () => {
                 borderRadius="md"
               >
                 <HStack gap={3} align="flex-start">
-                  <FiAlertCircle color="var(--chakra-colors-orange-500)" size={20} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <FiAlertCircle
+                    color="var(--chakra-colors-orange-500)"
+                    size={20}
+                    style={{ flexShrink: 0, marginTop: 2 }}
+                  />
                   <Text fontSize="sm" color="orange.800">
-                    Salve os <strong>Dados da Empresa</strong> acima (nome da empresa é obrigatório) para poder adicionar produtos e serviços.
+                    Salve os <strong>Dados da Empresa</strong> acima (nome da
+                    empresa é obrigatório) para poder adicionar produtos e
+                    serviços.
                   </Text>
                 </HStack>
               </Box>
             )}
 
-            <Box opacity={canAddProductsOrServices ? 1 : 0.7} pointerEvents={canAddProductsOrServices ? 'auto' : 'none'}>
+            <Box
+              opacity={canAddProductsOrServices ? 1 : 0.7}
+              pointerEvents={canAddProductsOrServices ? 'auto' : 'none'}
+            >
               <HStack justify="space-between" mb={4}>
                 <HStack gap={2} align="center">
                   <Text fontSize="lg" fontWeight="semibold">
@@ -387,7 +360,12 @@ export const Company: React.FC = () => {
                     <VStack gap={3} align="stretch">
                       {product.category && (
                         <Box>
-                          <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                          <Text
+                            fontSize="sm"
+                            fontWeight="medium"
+                            mb={1}
+                            color="gray.700"
+                          >
                             Categoria
                           </Text>
                           <Text fontSize="sm" color="gray.600">
@@ -396,7 +374,12 @@ export const Company: React.FC = () => {
                         </Box>
                       )}
                       <Box>
-                        <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                        <Text
+                          fontSize="sm"
+                          fontWeight="medium"
+                          mb={1}
+                          color="gray.700"
+                        >
                           Descrição
                         </Text>
                         <Text fontSize="sm" color="gray.600">
@@ -407,10 +390,19 @@ export const Company: React.FC = () => {
                         product.price !== undefined &&
                         product.price > 0 && (
                           <Box>
-                            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                            <Text
+                              fontSize="sm"
+                              fontWeight="medium"
+                              mb={1}
+                              color="gray.700"
+                            >
                               Preço
                             </Text>
-                            <Text fontSize="sm" color="gray.600" fontWeight="semibold">
+                            <Text
+                              fontSize="sm"
+                              color="gray.600"
+                              fontWeight="semibold"
+                            >
                               R$ {product.price.toFixed(2).replace('.', ',')}
                             </Text>
                           </Box>
@@ -422,7 +414,11 @@ export const Company: React.FC = () => {
                 {products.length === 0 && (
                   <EmptyState
                     title="Nenhum produto adicionado"
-                    description={canAddProductsOrServices ? 'Adicione produtos para treinar o assistente' : 'Salve os dados da empresa acima para desbloquear'}
+                    description={
+                      canAddProductsOrServices
+                        ? 'Adicione produtos para treinar o assistente'
+                        : 'Salve os dados da empresa acima para desbloquear'
+                    }
                     icon={<FiPlus size={32} color="#9ca3af" />}
                   />
                 )}
@@ -431,7 +427,10 @@ export const Company: React.FC = () => {
 
             <Box h="1px" bg="gray.200" />
 
-            <Box opacity={canAddProductsOrServices ? 1 : 0.7} pointerEvents={canAddProductsOrServices ? 'auto' : 'none'}>
+            <Box
+              opacity={canAddProductsOrServices ? 1 : 0.7}
+              pointerEvents={canAddProductsOrServices ? 'auto' : 'none'}
+            >
               <HStack justify="space-between" mb={4}>
                 <HStack gap={2} align="center">
                   <Text fontSize="lg" fontWeight="semibold">
@@ -534,7 +533,12 @@ export const Company: React.FC = () => {
                     <VStack gap={3} align="stretch">
                       {service.category && (
                         <Box>
-                          <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                          <Text
+                            fontSize="sm"
+                            fontWeight="medium"
+                            mb={1}
+                            color="gray.700"
+                          >
                             Categoria
                           </Text>
                           <Text fontSize="sm" color="gray.600">
@@ -543,7 +547,12 @@ export const Company: React.FC = () => {
                         </Box>
                       )}
                       <Box>
-                        <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                        <Text
+                          fontSize="sm"
+                          fontWeight="medium"
+                          mb={1}
+                          color="gray.700"
+                        >
                           Descrição
                         </Text>
                         <Text fontSize="sm" color="gray.600">
@@ -554,10 +563,19 @@ export const Company: React.FC = () => {
                         service.price !== undefined &&
                         service.price > 0 && (
                           <Box>
-                            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+                            <Text
+                              fontSize="sm"
+                              fontWeight="medium"
+                              mb={1}
+                              color="gray.700"
+                            >
                               Preço
                             </Text>
-                            <Text fontSize="sm" color="gray.600" fontWeight="semibold">
+                            <Text
+                              fontSize="sm"
+                              color="gray.600"
+                              fontWeight="semibold"
+                            >
                               R$ {service.price.toFixed(2).replace('.', ',')}
                             </Text>
                           </Box>
@@ -569,50 +587,16 @@ export const Company: React.FC = () => {
                 {services.length === 0 && (
                   <EmptyState
                     title="Nenhum serviço adicionado"
-                    description={canAddProductsOrServices ? 'Adicione serviços para treinar o assistente' : 'Salve os dados da empresa acima para desbloquear'}
+                    description={
+                      canAddProductsOrServices
+                        ? 'Adicione serviços para treinar o assistente'
+                        : 'Salve os dados da empresa acima para desbloquear'
+                    }
                     icon={<FiPlus size={32} color="#9ca3af" />}
                   />
                 )}
               </VStack>
             </Box>
-
-            <Box h="1px" bg="gray.200" />
-
-            <AITrainingAidMessage />
-
-            <Button
-              onClick={handleTrain}
-              bg="green.500"
-              color="white"
-              size="lg"
-              _hover={{ bg: 'green.600' }}
-              disabled={
-                !companyName ||
-                !description ||
-                !hasProductsOrServices ||
-                loadingProductsOrServices ||
-                isTraining
-              }
-              loading={isTraining}
-              alignSelf="flex-start"
-            >
-              {isTrained ? 'Retreinar IA' : 'Treinar IA'}
-            </Button>
-
-            {isTrained && (
-              <Box
-                p={4}
-                bg="green.50"
-                border="1px"
-                borderColor="green.200"
-                borderRadius="md"
-              >
-                <Text color="green.700" fontWeight="medium">
-                  ✅ IA treinada com sucesso! O assistente está pronto para
-                  atender seus clientes.
-                </Text>
-              </Box>
-            )}
           </VStack>
         </Card>
       </VStack>

@@ -45,6 +45,7 @@ model Company {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   analytics          Analytics[]
+  assistants         Assistant[]
   owner              User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   conversationCaches ConversationCache[]
   conversations      Conversation[]
@@ -58,6 +59,20 @@ model Company {
   trainingData       TrainingData[]
 
   @@map("companies")
+}
+
+model Assistant {
+  id             String   @id @default(uuid())
+  companyId      String
+  name           String
+  description    String?
+  whatsappNumber String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@map("assistants")
 }
 
 model Product {

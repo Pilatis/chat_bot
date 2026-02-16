@@ -9,6 +9,7 @@ import {
   Avatar,
 } from '@chakra-ui/react';
 import { FiSend } from 'react-icons/fi';
+import { useCompany } from '@/hooks';
 
 interface Message {
   id: string;
@@ -30,6 +31,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   disabled = false,
   loading = false
 }) => {
+  const { company } = useCompany();
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const bgUser = 'contexta.500';
@@ -61,19 +63,25 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   return (
     <Box
       w="full"
-      h="500px"
+      h={company ? '500px' : 'auto'}
       border="1px"
       borderColor="grayBorder"
       borderRadius="xl"
       overflow="hidden"
       bg="white"
     >
-      <Box h="400px" p={4} overflowY="auto">
+      <Box h={company ? '400px' : '200px'} p={4} overflowY="auto">
         <VStack gap={4} align="stretch">
           {messages.length === 0 ? (
-            <Text color="grayBold" textAlign="center" py={8}>
-              Nenhuma mensagem ainda. Digite algo para começar!
-            </Text>
+            company ? (
+              <Text color="grayBold" textAlign="center" py={8}>
+                Nenhuma mensagem ainda. Digite algo para começar!
+              </Text>
+            ) : (
+              <Text color="grayBold" textAlign="center" py={8}>
+                Você não tem uma empresa cadastrada. Crie uma empresa para começar a usar o chatbot.
+              </Text>
+            )
           ) : (
             messages.map((message) => (
               <HStack

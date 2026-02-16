@@ -6,3 +6,4 @@ export * from './analytics.types';
 export * from './api.types';
 export * from './plan.types';
 export * from './whatsapp.types';
+export * from './assistant.types';

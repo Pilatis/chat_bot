@@ -4,6 +4,7 @@ import React, { ReactNode } from 'react';
 import { ApiProvider } from './api-provider';
 import { AuthProvider } from './auth-provider';
 import { CompanyProvider } from './company-provider';
+import { AssistantProvider } from './assistant-provider';
 import { ChatbotProvider } from './chatbot-provider';
 import { AnalyticsProvider } from './analytics-provider';
 import { PlansProvider } from './plans-provider';
@@ -35,11 +36,13 @@ export const CompanyAppProvider: React.FC<{
         <PlansProvider>
           <WhatsAppProvider>
             <CompanyProvider>
-              <ChatbotProvider companyId={companyId}>
-                <AnalyticsProvider companyId={companyId}>
-                  {children}
-                </AnalyticsProvider>
-              </ChatbotProvider>
+              <AssistantProvider>
+                <ChatbotProvider companyId={companyId}>
+                  <AnalyticsProvider companyId={companyId}>
+                    {children}
+                  </AnalyticsProvider>
+                </ChatbotProvider>
+              </AssistantProvider>
             </CompanyProvider>
           </WhatsAppProvider>
         </PlansProvider>
@@ -52,6 +55,7 @@ export const CompanyAppProvider: React.FC<{
 export { ApiProvider } from './api-provider';
 export { AuthProvider } from './auth-provider';
 export { CompanyProvider } from './company-provider';
+export { AssistantProvider } from './assistant-provider';
 export { ChatbotProvider } from './chatbot-provider';
 export { AnalyticsProvider } from './analytics-provider';
 export { PlansProvider } from './plans-provider';
@@ -61,6 +65,7 @@ export { WhatsAppProvider } from './whatsapp-provider';
 export { useApi } from '../hooks/use-api';
 export { useAuth, useRequireAuth } from '../hooks/useAuth';
 export { useCompany, useProducts } from '../hooks/useCompany';
+export { useAssistant } from '../hooks/useAssistant';
 export { useChatbot, useChat } from '../hooks/useChatbot';
 export { useAnalytics, useMetrics } from '../hooks/useAnalytics';
 export { usePlans } from '../hooks/usePlans';

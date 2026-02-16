@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from '../modules/auth/auth.routes';
+import assistantRoutes from '../modules/assistant/assistant.routes';
 import companyRoutes from '../modules/company/company.routes';
 import chatbotRoutes from '../modules/chatbot/chatbot.routes';
 import messageRoutes from '../modules/message/message.routes';
@@ -11,6 +12,9 @@ const router = Router();
 
 // Rotas de autenticação
 router.use('/auth', authRoutes);
+
+// Rotas de assistente (antes de company para que /company/:companyId/assistant seja tratado aqui)
+router.use(assistantRoutes);
 
 // Rotas de empresa
 router.use('/company', companyRoutes);
