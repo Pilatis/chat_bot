@@ -28,6 +28,16 @@ export const registerSchema = Yup.object({
     .required('Confirmação de senha é obrigatória')
 });
 
+// Schema de validação para Perfil (edição)
+export const profileSchema = Yup.object({
+  name: Yup.string()
+    .min(2, 'Nome deve ter pelo menos 2 caracteres')
+    .max(100, 'Nome deve ter no máximo 100 caracteres')
+    .required('Nome é obrigatório'),
+  phone: Yup.string().nullable(),
+});
+
 // Tipos inferidos dos schemas
 export type LoginFormData = Yup.InferType<typeof loginSchema>;
 export type RegisterFormData = Yup.InferType<typeof registerSchema>;
+export type ProfileFormData = Yup.InferType<typeof profileSchema>;

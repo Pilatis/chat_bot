@@ -217,6 +217,58 @@ export class AuthService {
     return user;
   }
 
+  async updateProfile(userId: string, data: { name?: string; phone?: string | null }) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+    if (data.phone !== undefined && data.phone !== null && data.phone.trim() !== '') {
+      const existing = await prisma.user.findFirst({
+        where: { phone: data.phone.trim(), id: { not: userId } }
+      });
+      if (existing) {
+        throw new Error('Este telefone já está em uso');
+      }
+    }
+    return prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.name !== undefined && { name: data.name.trim() }),
+        ...(data.phone !== undefined && { phone: data.phone?.trim() || null })
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        planType: true,
+        createdAt: true,
+        companies: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            whatsappNumber: true,
+            createdAt: true
+          }
+        },
+        userPlan: {
+          select: {
+            planType: true,
+            plan: {
+              select: {
+                name: true,
+                price: true,
+                limitMessages: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
   async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
     try {
       const { verifyRefreshToken } = await import('../../utils/jwt');

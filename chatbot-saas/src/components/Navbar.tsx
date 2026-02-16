@@ -69,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpen, display }) => {
 
             <Menu.Positioner>
               <Menu.Content>
-                <Menu.Item value="perfil">
+                <Menu.Item value="perfil" onClick={() => router.push('/profile')}>
                   <FiUser />
                   Perfil
                 </Menu.Item>

@@ -277,7 +277,6 @@ export const Company: React.FC = () => {
                       </VStack>
                     }
                     showArrow
-                    portalled={false}
                   >
                     <IconButton
                       aria-label="Informação sobre produtos"
@@ -294,7 +293,6 @@ export const Company: React.FC = () => {
                   <Tooltip
                     content="Salve os dados da empresa acima para adicionar produtos"
                     showArrow
-                    portalled={false}
                   >
                     <Box display="inline-block">
                       <Button

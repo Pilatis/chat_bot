@@ -59,10 +59,6 @@ body {
   min-height: 100vh;
 }
 
-/* Animações suaves */
-* {
-  transition: all 0.2s ease-in-out;
-}
 
 /* Scrollbar customizada */
 ::-webkit-scrollbar {

@@ -60,6 +60,23 @@ export class AuthController {
     }
   };
 
+  updateProfile = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      const { name, phone } = req.body;
+
+      if (!userId) {
+        return errorResponse(res, 'Usuário não autenticado', 401);
+      }
+
+      const profile = await this.authService.updateProfile(userId, { name, phone });
+      return successResponse(res, 'Perfil atualizado com sucesso', profile);
+    } catch (error: any) {
+      const status = error.message?.includes('já está em uso') ? 400 : 404;
+      return errorResponse(res, error.message, status);
+    }
+  };
+
   refreshToken = async (req: Request, res: Response) => {
     try {
       const { refreshToken } = req.body;

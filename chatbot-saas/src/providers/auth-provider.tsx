@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from '../context/auth-context';
-import { AuthContextType, LoginData, RegisterData, User, type AuthResult } from '../types/auth.types';
+import { AuthContextType, LoginData, RegisterData, User, UpdateProfileData, type AuthResult } from '../types/auth.types';
 import { useApi } from '../hooks/use-api';
 import { useToast } from '../hooks/useToast';
 import { getLocalItem, setLocalItem, removeLocalItem } from '@/utils/storage';
@@ -124,6 +124,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const updateProfile = async (data: UpdateProfileData): Promise<AuthResult> => {
+    try {
+      setError(null);
+      const response = await api.put('/auth/profile', data);
+      if (response.data?.success && response.data?.data) {
+        setUser(response.data.data);
+        showSuccess(response.data?.message || 'Perfil atualizado com sucesso');
+        return 'success';
+      }
+      const msg = response.data?.message || 'Erro ao atualizar perfil';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao atualizar perfil';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    }
+  };
+
   const clearError = (): void => {
     setError(null);
   };
@@ -143,6 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     register,
     logout,
     refreshUser,
+    updateProfile,
     clearError
   };
 

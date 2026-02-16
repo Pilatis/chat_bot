@@ -13,6 +13,7 @@ router.post('/refresh-token', authController.refreshToken);
 
 // Rotas protegidas
 router.get('/profile', authMiddleware, authController.getProfile);
+router.put('/profile', authMiddleware, authController.updateProfile);
 
 // Exemplo de rota apenas para admin (descomente e implemente conforme necessário)
 // router.get('/admin/users', authMiddleware, adminMiddleware, authController.getAllUsers);
