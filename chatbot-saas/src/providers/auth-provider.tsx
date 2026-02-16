@@ -5,6 +5,7 @@ import { AuthContext } from '../context/auth-context';
 import { AuthContextType, LoginData, RegisterData, User, type AuthResult } from '../types/auth.types';
 import { useApi } from '../hooks/use-api';
 import { useToast } from '../hooks/useToast';
+import { getLocalItem, setLocalItem, removeLocalItem } from '@/utils/storage';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children
@@ -20,8 +21,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Verificar se há token salvo e carregar dados do usuário
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('accessToken');
-      
+      const token = getLocalItem('accessToken');
+
       if (token) {
         try {
           const response = await api.get('/auth/profile');
@@ -29,16 +30,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setUser(response.data.data);
           } else {
             // Token inválido, limpar storage
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
+            removeLocalItem('accessToken');
+            removeLocalItem('refreshToken');
           }
         } catch (error) {
           // Erro ao carregar perfil, limpar storage
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          removeLocalItem('accessToken');
+          removeLocalItem('refreshToken');
         }
       }
-      
+
       setIsLoading(false);
     };
 
@@ -54,8 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (response.data?.success && response.data?.data) {
         const { user: userData, accessToken, refreshToken } = response.data.data;
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        setLocalItem('accessToken', accessToken);
+        setLocalItem('refreshToken', refreshToken);
         setUser(userData);
         showSuccess(response.data?.message || 'Login realizado com sucesso');
         return 'success';
@@ -83,8 +84,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (response.data?.success && response.data?.data) {
         const { user: userData, accessToken, refreshToken } = response.data.data;
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        setLocalItem('accessToken', accessToken);
+        setLocalItem('refreshToken', refreshToken);
         setUser(userData);
         showSuccess(response.data?.message || 'Cadastro realizado com sucesso');
         return 'success';
@@ -105,8 +106,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = (): void => {
     // Limpar tokens e dados do usuário
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    removeLocalItem('accessToken');
+    removeLocalItem('refreshToken');
     setUser(null);
     setError(null);
   };
@@ -128,10 +129,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   useEffect(() => {
-    if (isAuthenticated && localStorage.getItem('accessToken')) {
+    if (isAuthenticated && getLocalItem('accessToken')) {
       refreshUser();
     }
-  }, [isAuthenticated, localStorage.getItem('accessToken')]);
+  }, [isAuthenticated]);
 
   const contextValue: AuthContextType = {
     user,

@@ -17,7 +17,8 @@ import {
   FiChevronRight,
 } from 'react-icons/fi';
 import { SiWhatsapp } from 'react-icons/si';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ContextaLogo } from './ContextaLogo';
 
 interface SidebarProps {
@@ -35,11 +36,11 @@ interface NavItemProps {
 }
 
 const NavItem = ({ icon, children, to, onClose, isCollapsed }: NavItemProps) => {
-  const location = useLocation();
-  const isActive = location.pathname === to;
-  
+  const pathname = usePathname();
+  const isActive = pathname === to;
+
   return (
-    <Link to={to} onClick={onClose}>
+    <Link href={to} onClick={onClose}>
       <HStack
         p={3}
         rounded="lg"

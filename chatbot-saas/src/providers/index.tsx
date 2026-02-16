@@ -1,3 +1,5 @@
+'use client';
+
 import React, { ReactNode } from 'react';
 import { ApiProvider } from './api-provider';
 import { AuthProvider } from './auth-provider';

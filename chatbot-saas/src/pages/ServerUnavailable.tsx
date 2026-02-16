@@ -1,9 +1,12 @@
-import React, { useMemo, useState } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { Box, Button, HStack, Text, VStack } from '@chakra-ui/react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { getSessionItem, removeSessionItem } from '@/utils/storage';
 
 function ServerDownSvg() {
   return (
@@ -33,29 +36,27 @@ function ServerDownSvg() {
 }
 
 export const ServerUnavailable: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
   const { logout } = useAuth();
   const { showError, showSuccess } = useToast();
 
   const [isRetrying, setIsRetrying] = useState(false);
+  const [returnTo, setReturnTo] = useState<string | null>(null);
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
-  const returnTo = useMemo(() => {
-    const fromState = (location.state as any)?.from as string | undefined;
-    const fromStorage = sessionStorage.getItem('serverUnavailableReturnTo') || undefined;
-    return fromState || fromStorage;
-  }, [location.state]);
+  useEffect(() => {
+    setReturnTo(getSessionItem('serverUnavailableReturnTo'));
+  }, []);
 
   const handleRetry = async () => {
     setIsRetrying(true);
     try {
       await axios.get(`${apiBaseUrl}/health`, { timeout: 6000 });
-      sessionStorage.removeItem('serverUnavailableLastError');
+      removeSessionItem('serverUnavailableLastError');
       showSuccess('Conexão reestabelecida. Você já pode continuar.');
-      navigate(returnTo || '/dashboard', { replace: true });
-    } catch (err: any) {
+      router.replace(returnTo || '/dashboard');
+    } catch (err: unknown) {
       showError('Ainda não foi possível conectar no servidor. Tente novamente em instantes.', {
         title: 'Servidor ainda indisponível'
       });
@@ -66,15 +67,15 @@ export const ServerUnavailable: React.FC = () => {
 
   const handleBack = () => {
     if (returnTo) {
-      navigate(returnTo);
+      router.push(returnTo);
       return;
     }
-    navigate(-1);
+    router.back();
   };
 
   const handleExit = () => {
     logout();
-    navigate('/login', { replace: true });
+    router.replace('/login');
   };
 
   return (

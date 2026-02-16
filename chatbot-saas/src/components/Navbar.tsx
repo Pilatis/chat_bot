@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { FiBell, FiUser, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { AvatarComponent } from './Avatar';
 import { ContextaLogo } from './ContextaLogo';
 
@@ -22,11 +22,11 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpen, display }) => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    router.replace('/login');
   };
 
   return (

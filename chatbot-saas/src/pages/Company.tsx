@@ -58,6 +58,9 @@ export const Company: React.FC = () => {
   const hasProductsOrServices = products.length > 0 || services.length > 0;
   const loadingProductsOrServices = isProductLoading || isServiceLoading;
 
+  // Só permite adicionar produtos/serviços quando a empresa tiver sido salva com nome
+  const canAddProductsOrServices = !!(company?.id && company?.name?.trim());
+
   // Carregar dados da empresa quando o componente montar
   useEffect(() => {
     if (company) {
@@ -264,7 +267,24 @@ export const Company: React.FC = () => {
               Produtos e Serviços
             </Text>
 
-            <Box>
+            {!canAddProductsOrServices && (
+              <Box
+                p={4}
+                bg="orange.50"
+                border="1px"
+                borderColor="orange.200"
+                borderRadius="md"
+              >
+                <HStack gap={3} align="flex-start">
+                  <FiAlertCircle color="var(--chakra-colors-orange-500)" size={20} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <Text fontSize="sm" color="orange.800">
+                    Salve os <strong>Dados da Empresa</strong> acima (nome da empresa é obrigatório) para poder adicionar produtos e serviços.
+                  </Text>
+                </HStack>
+              </Box>
+            )}
+
+            <Box opacity={canAddProductsOrServices ? 1 : 0.7} pointerEvents={canAddProductsOrServices ? 'auto' : 'none'}>
               <HStack justify="space-between" mb={4}>
                 <HStack gap={2} align="center">
                   <Text fontSize="lg" fontWeight="semibold">
@@ -297,19 +317,41 @@ export const Company: React.FC = () => {
                     </IconButton>
                   </Tooltip>
                 </HStack>
-                <Button
-                  onClick={() => setIsAddProductModalOpen(true)}
-                  size="sm"
-                  bg="contexta.500"
-                  color="white"
-                  variant="outline"
-                  _hover={{ bg: 'contexta.600' }}
-                  loading={isProductLoading}
-                  disabled={loadingProductsOrServices || isSaving}
-                >
-                  <FiPlus />
-                  Adicionar Produto
-                </Button>
+                {!canAddProductsOrServices ? (
+                  <Tooltip
+                    content="Salve os dados da empresa acima para adicionar produtos"
+                    showArrow
+                    portalled={false}
+                  >
+                    <Box display="inline-block">
+                      <Button
+                        size="sm"
+                        bg="contexta.500"
+                        color="white"
+                        variant="outline"
+                        loading={isProductLoading}
+                        disabled
+                      >
+                        <FiPlus />
+                        Adicionar Produto
+                      </Button>
+                    </Box>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    onClick={() => setIsAddProductModalOpen(true)}
+                    size="sm"
+                    bg="contexta.500"
+                    color="white"
+                    variant="outline"
+                    _hover={{ bg: 'contexta.600' }}
+                    loading={isProductLoading}
+                    disabled={loadingProductsOrServices || isSaving}
+                  >
+                    <FiPlus />
+                    Adicionar Produto
+                  </Button>
+                )}
               </HStack>
 
               <VStack gap={4} align="stretch">
@@ -380,7 +422,7 @@ export const Company: React.FC = () => {
                 {products.length === 0 && (
                   <EmptyState
                     title="Nenhum produto adicionado"
-                    description="Adicione produtos para treinar o assistente"
+                    description={canAddProductsOrServices ? 'Adicione produtos para treinar o assistente' : 'Salve os dados da empresa acima para desbloquear'}
                     icon={<FiPlus size={32} color="#9ca3af" />}
                   />
                 )}
@@ -389,7 +431,7 @@ export const Company: React.FC = () => {
 
             <Box h="1px" bg="gray.200" />
 
-            <Box>
+            <Box opacity={canAddProductsOrServices ? 1 : 0.7} pointerEvents={canAddProductsOrServices ? 'auto' : 'none'}>
               <HStack justify="space-between" mb={4}>
                 <HStack gap={2} align="center">
                   <Text fontSize="lg" fontWeight="semibold">
@@ -422,19 +464,41 @@ export const Company: React.FC = () => {
                     </IconButton>
                   </Tooltip>
                 </HStack>
-                <Button
-                  onClick={() => setIsAddServiceModalOpen(true)}
-                  size="sm"
-                  bg="contexta.500"
-                  color="white"
-                  variant="outline"
-                  _hover={{ bg: 'contexta.600' }}
-                  loading={isServiceLoading}
-                  disabled={loadingProductsOrServices || isSaving}
-                >
-                  <FiPlus />
-                  Adicionar Serviço
-                </Button>
+                {!canAddProductsOrServices ? (
+                  <Tooltip
+                    content="Salve os dados da empresa acima para adicionar serviços"
+                    showArrow
+                    portalled={false}
+                  >
+                    <Box display="inline-block">
+                      <Button
+                        size="sm"
+                        bg="contexta.500"
+                        color="white"
+                        variant="outline"
+                        loading={isServiceLoading}
+                        disabled
+                      >
+                        <FiPlus />
+                        Adicionar Serviço
+                      </Button>
+                    </Box>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    onClick={() => setIsAddServiceModalOpen(true)}
+                    size="sm"
+                    bg="contexta.500"
+                    color="white"
+                    variant="outline"
+                    _hover={{ bg: 'contexta.600' }}
+                    loading={isServiceLoading}
+                    disabled={loadingProductsOrServices || isSaving}
+                  >
+                    <FiPlus />
+                    Adicionar Serviço
+                  </Button>
+                )}
               </HStack>
 
               <VStack gap={4} align="stretch">
@@ -505,7 +569,7 @@ export const Company: React.FC = () => {
                 {services.length === 0 && (
                   <EmptyState
                     title="Nenhum serviço adicionado"
-                    description="Adicione serviços para treinar o assistente"
+                    description={canAddProductsOrServices ? 'Adicione serviços para treinar o assistente' : 'Salve os dados da empresa acima para desbloquear'}
                     icon={<FiPlus size={32} color="#9ca3af" />}
                   />
                 )}

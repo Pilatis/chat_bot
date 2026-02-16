@@ -40,8 +40,8 @@ export type PlanResult = 'success' | 'failure' | void;
 export interface PlanContextType extends PlanState {
   createPlan: (data: CreatePlanData) => Promise<Plan | null>;
   assignPlan: (planId: string) => Promise<PlanResult>;
-  getUserPlan: () => Promise<void>;
-  getAllPlans: () => Promise<void>;
+  getUserPlan: (showToast?: boolean) => Promise<void>;
+  getAllPlans: (showToast?: boolean) => Promise<void>;
   refreshPlans: () => Promise<void>;
   clearError: () => void;
 }

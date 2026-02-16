@@ -49,8 +49,6 @@
 body {
   padding: 0;
   margin: 0;
-  display: flex;
-  place-items: center;
   width: '100%';
   min-height: 100vh;
   font-family: 'Inter', sans-serif;

@@ -44,7 +44,7 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const getUserPlan = async (): Promise<void> => {
+  const getUserPlan = async (showToast: boolean = true): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -55,7 +55,9 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
         setCurrentPlan(response.data.data);
       } else {
         const msg = response.data?.message || 'Erro ao carregar plano atual';
-        showError(msg);
+
+        if (showToast) showError(msg);
+        
         setError(msg);
       }
     } catch (err: unknown) {
@@ -95,7 +97,7 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const getAllPlans = async (): Promise<void> => {
+  const getAllPlans = async (showToast: boolean = true): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -106,7 +108,7 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
         setAllPlans(response.data.data || []);
       } else {
         const msg = response.data?.message || 'Erro ao carregar planos';
-        showError(msg);
+        if (showToast) showError(msg);
         setError(msg);
       }
     } catch (err: unknown) {
@@ -119,7 +121,7 @@ export const PlansProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const refreshPlans = async (): Promise<void> => {
-    await Promise.all([getUserPlan()]);
+    await Promise.all([getUserPlan(false)]);
   };
 
   // Carregar planos ao montar o componente

@@ -4,8 +4,9 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import { ApiContext } from '../context/api.context';
 import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { ApiContextType } from '../types/api.types';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '../hooks/useToast';
+import { getLocalItem, setLocalItem, removeLocalItem, setSessionItem } from '@/utils/storage';
 
 // Tipos para as respostas da API
 interface ApiResponse<T = any> {
@@ -18,9 +19,11 @@ interface ApiResponse<T = any> {
 export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
-  const navigate = useNavigate();
-  const location = useLocation();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams?.toString() ? `?${searchParams.toString()}` : '';
   const { showError } = useToast();
 
   const lastServerDownToastAtRef = useRef<number>(0);
@@ -72,23 +75,21 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       }
 
-      const returnTo = `${location.pathname}${location.search || ''}`;
+      const returnTo = pathname ? `${pathname}${search}` : '';
       if (returnTo && returnTo !== serverUnavailablePath) {
-        sessionStorage.setItem('serverUnavailableReturnTo', returnTo);
+        setSessionItem('serverUnavailableReturnTo', returnTo);
       }
 
       const code = String(axiosError?.code ?? '');
       const message = String(axiosError?.message ?? '');
-      sessionStorage.setItem('serverUnavailableLastError', JSON.stringify({ code, message }));
+      setSessionItem('serverUnavailableLastError', JSON.stringify({ code, message }));
     } catch {
     }
 
-    if (location.pathname !== serverUnavailablePath) {
-      navigate(serverUnavailablePath, {
-        state: { from: `${location.pathname}${location.search || ''}` }
-      });
+    if (pathname !== serverUnavailablePath) {
+      router.replace(serverUnavailablePath);
     }
-  }, [location.pathname, location.search, navigate, showError]);
+  }, [pathname, search, router, showError]);
   
   const apiClient: AxiosInstance = axios.create({
     baseURL: apiBaseUrl,
@@ -107,7 +108,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = getLocalItem('accessToken');
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -115,7 +116,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   apiClientFile.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = getLocalItem('accessToken');
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -132,26 +133,25 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleUnauthorized = async (originalRequest: () => Promise<AxiosResponse>): Promise<AxiosResponse> => {
     try {
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = getLocalItem('refreshToken');
       if (refreshToken) {
         const response = await axios.post(`${apiBaseUrl}/auth/refresh-token`, {
           refreshToken
         });
 
         const { accessToken } = response.data.data;
-        localStorage.setItem('accessToken', accessToken);
-        
+        setLocalItem('accessToken', accessToken);
+
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
         apiClientFile.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-        
+
         return await originalRequest();
       } else {
         throw new Error('No refresh token');
       }
     } catch (error) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-     // window.location.href = '/login';
+      removeLocalItem('accessToken');
+      removeLocalItem('refreshToken');
       throw new Error('Token refresh failed');
     }
   };

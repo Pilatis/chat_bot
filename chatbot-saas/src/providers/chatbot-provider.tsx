@@ -145,12 +145,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
     }
   };
 
-  // Carregar histórico e estatísticas ao montar o componente
+  // Carregar histórico e estatísticas quando companyId estiver disponível
   useEffect(() => {
-    if (companyId) {
-      getChatHistory();
-      getChatStats();
+    if (!companyId) {
+      setIsLoading(false);
+      return;
     }
+    getChatHistory();
+    getChatStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 

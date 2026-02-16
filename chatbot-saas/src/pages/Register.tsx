@@ -7,9 +7,9 @@ import {
   Text,
   Input,
   Button,
-  Link,
 } from '@chakra-ui/react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { useAuth } from '../hooks/useAuth';
 import { registerSchema, RegisterFormData } from '../schemas/auth.schemas';
@@ -17,7 +17,7 @@ import { ContextaLogo } from '../components/ContextaLogo';
 
 export const Register: React.FC = () => {
   const { register, isLoading, error } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const bg = 'whiteLight';
   const cardBg = 'white';
@@ -38,7 +38,7 @@ export const Register: React.FC = () => {
       password: values.password,
     });
     if (result === 'success') {
-      navigate('/company');
+      router.replace('/company');
     }
   };
 
@@ -188,8 +188,10 @@ export const Register: React.FC = () => {
 
           <HStack>
             <Text color="grayBold">Já tem uma conta?</Text>
-            <Link as={RouterLink} href="/login" color="contexta.500" _hover={{ color: 'contexta.600' }}>
-              Faça login
+            <Link href="/login">
+              <Box as="span" color="contexta.500" _hover={{ color: 'contexta.600' }}>
+                Faça login
+              </Box>
             </Link>
           </HStack>
 

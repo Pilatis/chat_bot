@@ -9,9 +9,12 @@ dotenv.config();
 
 const app = express();
 
-// Middlewares globais
+// Middlewares globais - CORS: aceita a URL do front com ou sem barra final (Next.js na 3002)
+const frontendBase = (process.env['FRONTEND_URL'] || 'http://localhost:3000').replace(/\/$/, '');
+const allowedOrigins = [frontendBase, frontendBase + '/'];
+
 app.use(cors({
-  origin: process.env['FRONTEND_URL'] || 'http://localhost:3000',
+  origin: allowedOrigins,
   credentials: true
 }));
 
