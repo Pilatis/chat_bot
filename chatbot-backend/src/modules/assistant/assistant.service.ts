@@ -65,4 +65,18 @@ export class AssistantService {
       }
     });
   }
+
+  async delete(assistantId: string, userId: string) {
+    const assistant = await prisma.assistant.findUnique({
+      where: { id: assistantId },
+      include: { company: true }
+    });
+    if (!assistant || assistant.company.ownerId !== userId) {
+      throw new Error('Assistente não encontrado ou você não tem permissão');
+    }
+    await prisma.assistant.delete({
+      where: { id: assistantId }
+    });
+    return { message: 'Assistente deletado com sucesso' };
+  }
 }

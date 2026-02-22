@@ -5,7 +5,7 @@ services:
     image: pgvector/pgvector:0.8.1-pg17-trixie
     container_name: postgres_pgvector
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgreadmin

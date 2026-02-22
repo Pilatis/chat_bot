@@ -29,6 +29,7 @@ export interface AssistantContextType {
   error: string | null;
   createAssistant: (companyId: string, data: CreateAssistantData) => Promise<AssistantProviderResult>;
   updateAssistant: (assistantId: string, data: UpdateAssistantData) => Promise<AssistantProviderResult>;
+  deleteAssistant: (assistantId: string) => Promise<AssistantProviderResult>;
   refreshAssistants: (companyId: string) => Promise<void>;
   clearError: () => void;
 }

@@ -28,6 +28,11 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({ children, comp
 
   const sendMessage = async (message: string): Promise<void> => {
     if (!message.trim()) return;
+    if (!companyId?.trim()) {
+      showError('Empresa não carregada. Aguarde ou recarregue a página.');
+      setError('Empresa não carregada.');
+      return;
+    }
 
     try {
       setIsProcessing(true);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense,  } from 'react';
 import {
   Box,
   VStack,
@@ -10,12 +10,16 @@ import {
   Input,
   Textarea,
   Button,
+  IconButton,
 } from '@chakra-ui/react';
-import { FiAlertCircle, FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
+import { FiAlertCircle, FiMessageSquare, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { Card } from '../components/Card';
 import { ChatBox } from '../components/ChatBox';
 import { EmptyState } from '../components/ui/empty-state';
 import { AITrainingAidMessage } from '../components/company/AI-training-aid-message';
+import { Tooltip } from '../components/ui/tooltip';
+import { EditAssistantModal } from '../components/chatbot/modals/edit-assistant-modal';
+import { DeleteAssistantModal } from '../components/chatbot/modals/delete-assistant-modal';
 import { useChatbot } from '../hooks/useChatbot';
 import { useCompany } from '../hooks/useCompany';
 import { useAssistant } from '../hooks/useAssistant';
@@ -35,6 +39,8 @@ export const Chatbot: React.FC = () => {
     isLoading: assistantsLoading,
     error: assistantsError,
     createAssistant,
+    updateAssistant,
+    deleteAssistant,
   } = useAssistant();
   const {
     messages,
@@ -49,6 +55,11 @@ export const Chatbot: React.FC = () => {
   const [createDescription, setCreateDescription] = useState('');
   const [createWhatsApp, setCreateWhatsApp] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const isTrained = Boolean(
     company?.products?.length || company?.services?.length
@@ -91,9 +102,35 @@ export const Chatbot: React.FC = () => {
     }
   };
 
+  const openEditModal = () => {
+    if (currentAssistant) setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async (data: { name?: string; description?: string; whatsappNumber?: string }) => {
+    if (!currentAssistant?.id) return;
+    setIsUpdating(true);
+    try {
+      const result = await updateAssistant(currentAssistant.id, data);
+      if (result === 'success') setIsEditModalOpen(false);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!currentAssistant?.id) return;
+    setIsDeleting(true);
+    try {
+      const result = await deleteAssistant(currentAssistant.id);
+      if (result === 'success') setIsDeleteConfirmOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const hasAssistant = currentAssistant != null;
   const isLoading = chatLoading || (hasAssistant === false && assistantsLoading);
-
+  
   if (isLoading && messages.length === 0 && !hasAssistant) {
     return (
       <Box>
@@ -216,6 +253,7 @@ export const Chatbot: React.FC = () => {
   }
 
   return (
+
     <Box>
       <VStack gap={8} align="stretch">
         {/* Cabeçalho */}
@@ -242,9 +280,35 @@ export const Chatbot: React.FC = () => {
         {/* Seção: Meu assistente */}
         <Card>
           <VStack gap={4} align="stretch">
-            <Text as="h2" fontSize="lg" fontWeight="semibold" color="gray.800">
-              Meu assistente
-            </Text>
+            <HStack justify="space-between" align="center" w="full">
+              <Text as="h2" fontSize="lg" fontWeight="semibold" color="gray.800">
+                Meu assistente
+              </Text>
+              <HStack gap={1}>
+                <Tooltip content="Editar assistente" showArrow>
+                  <IconButton
+                    aria-label="Editar assistente"
+                    size="sm"
+                    variant="ghost"
+                    colorPalette="gray"
+                    onClick={openEditModal}
+                  >
+                    <FiEdit2 />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="Excluir assistente" showArrow>
+                  <IconButton
+                    aria-label="Excluir assistente"
+                    size="sm"
+                    variant="ghost"
+                    colorPalette="red"
+                    onClick={() => setIsDeleteConfirmOpen(true)}
+                  >
+                    <FiTrash2 />
+                  </IconButton>
+                </Tooltip>
+              </HStack>
+            </HStack>
             <Box>
               <Text fontWeight="medium" color="gray.700">
                 {currentAssistant.name}
@@ -265,6 +329,21 @@ export const Chatbot: React.FC = () => {
             </Box>
           </VStack>
         </Card>
+
+        <EditAssistantModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          assistant={currentAssistant}
+          onSave={handleSaveEdit}
+          isLoading={isUpdating}
+        />
+        <DeleteAssistantModal
+          isOpen={isDeleteConfirmOpen}
+          onClose={() => setIsDeleteConfirmOpen(false)}
+          assistantName={currentAssistant.name}
+          onConfirm={handleConfirmDelete}
+          isLoading={isDeleting}
+        />
 
         {/* Seção: Treinar IA */}
         <Card>
@@ -339,5 +418,7 @@ export const Chatbot: React.FC = () => {
         </Card>
       </VStack>
     </Box>
-  );
-};
+
+    );
+  }
+

@@ -13,8 +13,8 @@ const router = Router();
 // Rotas de autenticação
 router.use('/auth', authRoutes);
 
-// Rotas de assistente (antes de company para que /company/:companyId/assistant seja tratado aqui)
-router.use(assistantRoutes);
+// Rotas de assistente (paths completos: /company/... e /assistant/..., montado em / para bater com /api/company/... e /api/assistant/...)
+router.use('/', assistantRoutes);
 
 // Rotas de empresa
 router.use('/company', companyRoutes);

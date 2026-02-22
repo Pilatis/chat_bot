@@ -6,7 +6,9 @@ import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestCo
 import { ApiContextType } from '../types/api.types';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '../hooks/useToast';
-import { getLocalItem, setLocalItem, removeLocalItem, setSessionItem } from '@/utils/storage';
+import { useUnauthorizedHandler } from '../hooks/useUnauthorizedHandler';
+import { getLocalItem, setLocalItem, setSessionItem } from '@/utils/storage';
+import { getApiErrorMessage } from '@/utils/api';
 
 // Tipos para as respostas da API
 interface ApiResponse<T = any> {
@@ -131,30 +133,11 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
     apiClientFile.defaults.headers.common[name] = value;
   };
 
-  const handleUnauthorized = async (originalRequest: () => Promise<AxiosResponse>): Promise<AxiosResponse> => {
-    try {
-      const refreshToken = getLocalItem('refreshToken');
-      if (refreshToken) {
-        const response = await axios.post(`${apiBaseUrl}/auth/refresh-token`, {
-          refreshToken
-        });
-
-        const { accessToken } = response.data.data;
-        setLocalItem('accessToken', accessToken);
-
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-        apiClientFile.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-
-        return await originalRequest();
-      } else {
-        throw new Error('No refresh token');
-      }
-    } catch (error) {
-      removeLocalItem('accessToken');
-      removeLocalItem('refreshToken');
-      throw new Error('Token refresh failed');
-    }
-  };
+  const { handleUnauthorized } = useUnauthorizedHandler({
+    apiBaseUrl,
+    apiClient,
+    apiClientFile
+  });
 
   const get = useCallback(async <T = any>(path: string, params?: any): Promise<ApiResponse<T>> => {
     try {
@@ -174,31 +157,24 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         return { errors: 'Servidor indisponível', status: 0 };
       }
 
-      // Se for erro 401, tenta refresh token
+      // 401: tenta refresh; se falhar, o hook já limpa sessão, exibe toast e redireciona
       if (axiosError.response?.status === 401) {
         try {
           const originalRequest = () => apiClient.get(path, { params });
           const response = await handleUnauthorized(originalRequest);
-          
-          return { 
-            data: response.data,
-            status: response.status,
-            statusText: response.statusText
-          };
-        } catch (refreshError) {
-          return {
-            errors: 'Token refresh failed',
-            status: 401
-          };
+          return { data: response.data, status: response.status, statusText: response.statusText };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : 'Sessão expirada';
+          return { errors: { message: msg }, status: 401 };
         }
       }
 
-      return {
-        errors: axiosError.response?.data || axiosError.message,
-        status: axiosError.response?.status || 500
-      };
+      const status = axiosError.response?.status ?? 500;
+      const body = axiosError.response?.data ?? axiosError.message;
+      const message = getApiErrorMessage(status, body);
+      return { errors: typeof body === 'object' ? body : { message }, status };
     }
-  }, [apiClient, handleServerUnavailable, isServerUnavailableError]);
+  }, [apiClient, handleServerUnavailable, isServerUnavailableError, handleUnauthorized]);
 
   const post = useCallback(async <T = any>(path: string, params?: any): Promise<ApiResponse<T>> => {
     try {
@@ -217,30 +193,23 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         return { errors: 'Servidor indisponível', status: 0 };
       }
 
-      // Se for erro 401, tenta refresh token
       if (axiosError.response?.status === 401) {
         try {
           const originalRequest = () => apiClient.post(path, params);
           const response = await handleUnauthorized(originalRequest);
-          
-          return {
-            data: response.data,
-            status: response.status
-          };
-        } catch (refreshError) {
-          return {
-            errors: 'Token refresh failed',
-            status: 401
-          };
+          return { data: response.data, status: response.status };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : 'Sessão expirada';
+          return { errors: { message: msg }, status: 401 };
         }
       }
 
-      return {
-        errors: axiosError.response?.data || axiosError.message,
-        status: axiosError.response?.status || 500
-      };
+      const status = axiosError.response?.status ?? 500;
+      const body = axiosError.response?.data ?? axiosError.message;
+      const message = getApiErrorMessage(status, body);
+      return { errors: typeof body === 'object' ? body : { message }, status };
     }
-  }, [apiClient, handleServerUnavailable, isServerUnavailableError]);
+  }, [apiClient, handleServerUnavailable, isServerUnavailableError, handleUnauthorized]);
 
   const put = useCallback(
     async <T = any>(path: string, params?: any): Promise<ApiResponse<T>> => {
@@ -260,30 +229,22 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
           return { errors: 'Servidor indisponível', status: 0 };
         }
 
-        // Se for erro 401, tenta refresh token
         if (axiosError.response?.status === 401) {
           try {
             const originalRequest = () => apiClient.put(path, params);
             const response = await handleUnauthorized(originalRequest);
-            
-            return {
-              data: response.data,
-              status: response.status
-            };
-          } catch (refreshError) {
-            return {
-              errors: 'Token refresh failed',
-              status: 401
-            };
+            return { data: response.data, status: response.status };
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Sessão expirada';
+            return { errors: { message: msg }, status: 401 };
           }
         }
 
-        return {
-          errors: axiosError.response?.data || axiosError.message,
-          status: axiosError.response?.status || 500
-        };
+        const status = axiosError.response?.status ?? 500;
+        const body = axiosError.response?.data ?? axiosError.message;
+        return { errors: typeof body === 'object' ? body : { message: getApiErrorMessage(status, body) }, status };
       }
-    }, [apiClient, handleServerUnavailable, isServerUnavailableError]);
+    }, [apiClient, handleServerUnavailable, isServerUnavailableError, handleUnauthorized]);
 
   const deleted = useCallback(
     async <T = any>(path: string, params?: any): Promise<ApiResponse<T>> => {
@@ -303,30 +264,22 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
           return { errors: 'Servidor indisponível', status: 0 };
         }
 
-        // Se for erro 401, tenta refresh token
         if (axiosError.response?.status === 401) {
           try {
             const originalRequest = () => apiClient.delete(path, params);
             const response = await handleUnauthorized(originalRequest);
-            
-            return {
-              data: response.data,
-              status: response.status
-            };
-          } catch (refreshError) {
-            return {
-              errors: 'Token refresh failed',
-              status: 401
-            };
+            return { data: response.data, status: response.status };
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Sessão expirada';
+            return { errors: { message: msg }, status: 401 };
           }
         }
 
-        return {
-          errors: axiosError.response?.data || axiosError.message,
-          status: axiosError.response?.status || 500
-        };
+        const status = axiosError.response?.status ?? 500;
+        const body = axiosError.response?.data ?? axiosError.message;
+        return { errors: typeof body === 'object' ? body : { message: getApiErrorMessage(status, body) }, status };
       }
-    }, [apiClient, handleServerUnavailable, isServerUnavailableError]);
+    }, [apiClient, handleServerUnavailable, isServerUnavailableError, handleUnauthorized]);
 
   const contextValue: ApiContextType = useMemo(() => ({
     api: { get, post, put, deleted, setHeader, setHeaderFile }

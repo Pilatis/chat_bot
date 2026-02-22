@@ -91,6 +91,27 @@ export const AssistantProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
+  const deleteAssistant = async (assistantId: string): Promise<AssistantProviderResult> => {
+    try {
+      setError(null);
+      const response = await api.deleted(`/assistant/${assistantId}`);
+      if (response.data?.success) {
+        if (company?.id) await refreshAssistants(company.id);
+        showSuccess(response.data?.message || 'Assistente removido com sucesso');
+        return 'success';
+      }
+      const msg = response.data?.message || 'Erro ao remover assistente';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao remover assistente';
+      showError(msg);
+      setError(msg);
+      return 'failure';
+    }
+  };
+
   useEffect(() => {
     if (company?.id) {
       refreshAssistants(company.id);
@@ -109,6 +130,7 @@ export const AssistantProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     error,
     createAssistant,
     updateAssistant,
+    deleteAssistant,
     refreshAssistants,
     clearError
   };

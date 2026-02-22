@@ -1,5 +1,6 @@
-// Respostas mockadas até integrar a API (ex.: OpenAI/ChatGPT).
-// Em produção: substituir generateAIResponse por chamada à API de chat.
+// Geração de resposta: Gemini (quando GEMINI_API_KEY configurada) ou fallback mock.
+
+import { generateText } from '../services/gemini.service';
 
 export interface TrainingData {
   companyName: string;
@@ -46,70 +47,113 @@ export const trainAIWithCompanyData = (data: TrainingData): string => {
   return JSON.stringify(knowledge);
 };
 
-/** Resposta mockada por palavras-chave. Trocar por chamada à API quando tiver a key. */
-export const generateAIResponse = (
+/** Monta o prompt de sistema para o Gemini com os dados da empresa */
+function buildSystemInstruction(trainingData: string): string {
+  const parsed = JSON.parse(trainingData);
+  const { company, description, products = [], services = [] } = parsed;
+
+  const parts: string[] = [
+    'Você é o assistente virtual de atendimento ao cliente da empresa.',
+    `Empresa: ${company}.`,
+  ];
+  if (description) {
+    parts.push(`Descrição: ${description}`);
+  }
+  if (products.length > 0) {
+    parts.push(
+      'Produtos disponíveis:',
+      ...products.map((p: { name: string; description: string; price: number }) =>
+        `- ${p.name}: ${p.description || 'Sem descrição'} | Preço: R$ ${p.price ?? 0}`
+      )
+    );
+  }
+  if (services.length > 0) {
+    parts.push(
+      'Serviços disponíveis:',
+      ...services.map((s: { name: string; description: string; price: number }) =>
+        `- ${s.name}: ${s.description || 'Sem descrição'} | Preço: R$ ${s.price ?? 0}`
+      )
+    );
+  }
+  parts.push(
+    'Responda sempre em português, de forma clara e objetiva.',
+    'Use apenas as informações da empresa fornecidas acima. Se não souber, diga que vai verificar e sugira contato.'
+  );
+  return parts.join('\n');
+}
+
+/** Resposta via Gemini (se GEMINI_API_KEY) ou fallback mock */
+export async function generateAIResponse(
   userMessage: string,
   trainingData: string
-): AIResponse => {
+): Promise<AIResponse> {
+  const systemInstruction = buildSystemInstruction(trainingData);
+  const geminiResponse = await generateText({
+    systemInstruction,
+    userMessage,
+  });
+
+  if (geminiResponse) {
+    return {
+      response: geminiResponse,
+      confidence: 0.85,
+      suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com atendente'],
+    };
+  }
+
+  return generateAIResponseFallback(userMessage, trainingData);
+}
+
+/** Fallback: respostas por palavras-chave quando Gemini não está disponível */
+function generateAIResponseFallback(
+  userMessage: string,
+  trainingData: string
+): AIResponse {
   const parsedData = JSON.parse(trainingData);
   const { company, products = [], services = [] } = parsedData;
-
   const lowerMessage = userMessage.toLowerCase();
 
   if (lowerMessage.includes('olá') || lowerMessage.includes('oi')) {
     return {
       response: `Olá! Bem-vindo(a) à ${company}! Como posso ajudá-lo(a) hoje?`,
       confidence: 0.9,
-      suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com atendente']
+      suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com atendente'],
     };
   }
-
   if (lowerMessage.includes('produto') || lowerMessage.includes('produtos')) {
     const productList = products.map((p: { name: string; price: number }) => `• ${p.name} - R$ ${p.price}`).join('\n');
     const text = productList
       ? `Aqui estão nossos produtos:\n${productList}\n\nGostaria de saber mais sobre algum produto específico?`
       : 'No momento não temos produtos cadastrados. Posso ajudar com nossos serviços ou outras informações?';
-    return {
-      response: text,
-      confidence: 0.8,
-      suggestedActions: ['Ver detalhes', 'Ver serviços', 'Fazer pedido']
-    };
+    return { response: text, confidence: 0.8, suggestedActions: ['Ver detalhes', 'Ver serviços', 'Fazer pedido'] };
   }
-
   if (lowerMessage.includes('serviço') || lowerMessage.includes('serviços')) {
     const serviceList = services.map((s: { name: string; price: number }) => `• ${s.name} - R$ ${s.price}`).join('\n');
     const text = serviceList
       ? `Aqui estão nossos serviços:\n${serviceList}\n\nGostaria de saber mais sobre algum serviço específico?`
       : 'No momento não temos serviços cadastrados. Posso ajudar com nossos produtos ou outras informações?';
-    return {
-      response: text,
-      confidence: 0.8,
-      suggestedActions: ['Ver detalhes', 'Ver produtos', 'Falar com atendente']
-    };
+    return { response: text, confidence: 0.8, suggestedActions: ['Ver detalhes', 'Ver produtos', 'Falar com atendente'] };
   }
-
   if (lowerMessage.includes('preço') || lowerMessage.includes('valor')) {
     return {
       response: 'Posso ajudá-lo(a) com informações sobre preços. Qual produto ou serviço te interessa?',
       confidence: 0.7,
-      suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com vendedor']
+      suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com vendedor'],
     };
   }
-
   if (lowerMessage.includes('contato') || lowerMessage.includes('telefone')) {
     return {
-      response: `Para mais informações, você pode nos contatar através do WhatsApp. Como posso ajudá-lo(a) hoje?`,
+      response: 'Para mais informações, você pode nos contatar através do WhatsApp. Como posso ajudá-lo(a) hoje?',
       confidence: 0.8,
-      suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com atendente']
+      suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com atendente'],
     };
   }
-
   return {
     response: `Entendi sua mensagem. Como posso ajudá-lo(a) com informações sobre a ${company}?`,
     confidence: 0.5,
-    suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com atendente', 'Ver informações']
+    suggestedActions: ['Ver produtos', 'Ver serviços', 'Falar com atendente', 'Ver informações'],
   };
-};
+}
 
 // Simula análise de sentimento (básica)
 export const analyzeSentiment = (message: string): 'positive' | 'negative' | 'neutral' => {

@@ -6,6 +6,7 @@ import { AuthContextType, LoginData, RegisterData, User, UpdateProfileData, type
 import { useApi } from '../hooks/use-api';
 import { useToast } from '../hooks/useToast';
 import { getLocalItem, setLocalItem, removeLocalItem } from '@/utils/storage';
+import { getBackendMessage } from '@/utils/api';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children
@@ -17,6 +18,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const { showSuccess, showError } = useToast();
 
   const isAuthenticated = !!user;
+
+  // Quando a API detecta 401 (token expirado), desloga e redireciona; este listener limpa o estado do usuário
+  useEffect(() => {
+    const onSessionExpired = () => {
+      removeLocalItem('accessToken');
+      removeLocalItem('refreshToken');
+      setUser(null);
+      setError(null);
+    };
+    window.addEventListener('auth:session-expired', onSessionExpired);
+    return () => window.removeEventListener('auth:session-expired', onSessionExpired);
+  }, []);
 
   // Verificar se há token salvo e carregar dados do usuário
   useEffect(() => {
@@ -60,11 +73,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(userData);
         showSuccess(response.data?.message || 'Login realizado com sucesso');
         return 'success';
+      } else {
+          console.log('caiu aqui erro', response)
+        const msg = getBackendMessage(response, 'Erro no login');
+        showError(msg);
+        setError(msg);
+        return 'failure';
       }
-      const msg = response.data?.message || 'Erro no login';
-      showError(msg);
-      setError(msg);
-      return 'failure';
     } catch (err: unknown) {
       const msg = (err as Error).message || 'Erro no login';
       showError(msg);
@@ -90,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         showSuccess(response.data?.message || 'Cadastro realizado com sucesso');
         return 'success';
       }
-      const msg = response.data?.message || 'Erro no registro';
+      const msg = getBackendMessage(response, 'Erro no registro');
       showError(msg);
       setError(msg);
       return 'failure';
@@ -133,7 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         showSuccess(response.data?.message || 'Perfil atualizado com sucesso');
         return 'success';
       }
-      const msg = response.data?.message || 'Erro ao atualizar perfil';
+      const msg = getBackendMessage(response, 'Erro ao atualizar perfil');
       showError(msg);
       setError(msg);
       return 'failure';

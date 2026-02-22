@@ -6,3 +6,4 @@ export { useAssistant } from './useAssistant';
 export { useChatbot, useChat } from './useChatbot';
 export { useAnalytics, useMetrics } from './useAnalytics';
 export { useToast } from './useToast';
+export { useUnauthorizedHandler } from './useUnauthorizedHandler';

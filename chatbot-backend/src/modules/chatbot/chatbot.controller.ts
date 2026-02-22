@@ -20,8 +20,12 @@ export class ChatbotController {
         return errorResponse(res, 'Usuário não autenticado', 401);
       }
 
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
+      if (!companyId || !companyId.trim()) {
+        return errorResponse(res, 'ID da empresa é obrigatório. Use a URL: POST /api/chatbot/SEU_UUID_DA_EMPRESA/message', 400);
+      }
+      // Rejeitar placeholder literal (ex.: alguém testando com "companyId" na URL)
+      if (companyId.toLowerCase() === 'companyid') {
+        return errorResponse(res, 'Substitua "companyId" pelo ID real da empresa (UUID). Ex: POST /api/chatbot/abc123-uuid/message', 400);
       }
 
       if (!message || message.trim().length === 0) {

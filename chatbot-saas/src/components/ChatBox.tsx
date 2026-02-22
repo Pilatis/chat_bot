@@ -34,6 +34,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   const { company } = useCompany();
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevCountRef = useRef(0);
   const bgUser = 'contexta.500';
   const bgBot = 'gray.100';
 
@@ -41,8 +42,15 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Só rolar quando uma nova mensagem for adicionada durante o uso (envio ou resposta). Não rola na carga com histórico (0→N).
   useEffect(() => {
-    scrollToBottom();
+    const count = messages.length;
+    const hadMessages = prevCountRef.current > 0;
+    const newMessageAdded = count > prevCountRef.current;
+    if (hadMessages && newMessageAdded) {
+      scrollToBottom();
+    }
+    prevCountRef.current = count;
   }, [messages]);
 
   const handleSend = () => {

@@ -79,7 +79,9 @@ export class ChatbotService {
     });
 
     if (!company) {
-      throw new Error('Empresa não encontrada ou não pertence ao usuário');
+      throw new Error(
+        'Empresa não encontrada ou você não tem permissão. Use o ID real da empresa (UUID) na URL: POST /api/chatbot/SEU_UUID/message'
+      );
     }
 
     // 1. LOG LAYER - Registra mensagem do cliente
@@ -247,7 +249,7 @@ export class ChatbotService {
         ? `${message.message}\n\nContexto:\n${fullContext}`
         : message.message;
 
-      aiResponse = generateAIResponse(enhancedMessage, trainingDataString);
+      aiResponse = await generateAIResponse(enhancedMessage, trainingDataString);
       aiResponse.source = knowledgeContext ? 'RAG' : memoryContext ? 'MEMORY' : 'AI';
       
       // Simula tokens e custo (em produção, use valores reais da API)

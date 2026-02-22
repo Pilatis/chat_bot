@@ -71,4 +71,25 @@ export class AssistantController {
       return errorResponse(res, error.message || 'Erro ao atualizar assistente', status);
     }
   };
+
+  delete = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      const { assistantId } = req.params;
+
+      if (!userId) {
+        return errorResponse(res, 'Usuário não autenticado', 401);
+      }
+
+      if (!assistantId) {
+        return errorResponse(res, 'ID do assistente é obrigatório', 400);
+      }
+
+      const assistant = await this.assistantService.delete(assistantId, userId);
+      return successResponse(res, 'Assistente deletado com sucesso', assistant);
+    } catch (error: any) {
+      const status = error.message?.includes('permissão') || error.message?.includes('não encontrado') ? 403 : 500;
+      return errorResponse(res, error.message || 'Erro ao deletar assistente', status);
+    }
+  }
 }

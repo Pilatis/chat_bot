@@ -10,5 +10,6 @@ router.use(authMiddleware);
 router.get('/company/:companyId/assistant', assistantController.listByCompany);
 router.post('/company/:companyId/assistant', assistantController.create);
 router.put('/assistant/:assistantId', assistantController.update);
+router.delete('/assistant/:assistantId', assistantController.delete);
 
 export default router;

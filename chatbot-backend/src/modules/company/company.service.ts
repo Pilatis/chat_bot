@@ -185,10 +185,10 @@ export class CompanyService {
     }
 
     const updateData: Record<string, unknown> = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description;
-    if (data.price !== undefined) updateData.price = data.price;
-    if (data.category !== undefined) updateData.category = data.category;
+    if (data.name !== undefined) updateData['name'] = data.name;
+    if (data.description !== undefined) updateData['description'] = data.description;
+    if (data.price !== undefined) updateData['price'] = data.price;
+    if (data.category !== undefined) updateData['category'] = data.category;
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
@@ -274,10 +274,10 @@ export class CompanyService {
     }
 
     const updateData: Record<string, unknown> = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description;
-    if (data.price !== undefined) updateData.price = data.price;
-    if (data.category !== undefined) updateData.category = data.category;
+    if (data.name !== undefined) updateData['name'] = data.name;
+    if (data.description !== undefined) updateData['description'] = data.description;
+    if (data.price !== undefined) updateData['price'] = data.price;
+    if (data.category !== undefined) updateData['category'] = data.category;
 
     const updatedService = await prisma.service.update({
       where: { id: serviceId },
