@@ -59,7 +59,7 @@ export async function createKnowledgeChunkWithVector(data: {
       ${data.knowledgeBaseId}::uuid,
       ${data.companyId}::uuid,
       ${data.content},
-      ${vectorString}::vector(1536),
+      ${vectorString}::jsonb,
       ${data.chunkIndex},
       ${data.tokenCount ?? null},
       ${data.metadata ? JSON.stringify(data.metadata) : null}::jsonb,
@@ -116,16 +116,14 @@ export async function searchSimilarChunks(
       kb.title,
       kb.category,
       kb.priority,
-      -- Calcula similaridade: 1 - distância de cosseno
-      -- Quanto maior, mais similar (0 a 1)
-      1 - (kc.embedding <=> ${vectorString}::vector(1536)) as similarity
+      1 - (kc.embedding::text::vector(1536) <=> ${vectorString}::vector(1536)) as similarity
     FROM knowledge_chunks kc
     JOIN knowledge_bases kb ON kc."knowledgeBaseId" = kb.id
     WHERE 
       kc."companyId" = ${companyId}::uuid
       AND kb."isActive" = true
       AND kc.embedding IS NOT NULL
-      AND 1 - (kc.embedding <=> ${vectorString}::vector(1536)) >= ${minSimilarity}
+      AND 1 - (kc.embedding::text::vector(1536) <=> ${vectorString}::vector(1536)) >= ${minSimilarity}
     ORDER BY similarity DESC
     LIMIT ${limit}
   `;
@@ -181,7 +179,7 @@ export async function createConversationCacheWithVector(data: {
       gen_random_uuid(),
       ${data.companyId}::uuid,
       ${data.conversationId ? data.conversationId : null}::uuid,
-      ${vectorString}::vector(1536),
+      ${vectorString}::jsonb,
       ${data.queryText ?? null},
       ${data.response ?? null},
       ${data.cacheType}::"CacheType",
@@ -229,14 +227,14 @@ export async function searchSimilarCaches(
     const results = await prisma.$queryRaw<any[]>`
       SELECT 
         cc.*,
-        1 - (cc."queryEmbedding" <=> ${vectorString}::vector(1536)) as similarity
+        1 - (cc."queryEmbedding"::text::vector(1536) <=> ${vectorString}::vector(1536)) as similarity
       FROM conversation_caches cc
       WHERE 
         cc."companyId" = ${companyId}::uuid
         AND cc."isActive" = ${isActive}
         AND cc."cacheType" = ${options.cacheType}::"CacheType"
         AND cc."queryEmbedding" IS NOT NULL
-        AND 1 - (cc."queryEmbedding" <=> ${vectorString}::vector(1536)) >= ${minSimilarity}
+        AND 1 - (cc."queryEmbedding"::text::vector(1536) <=> ${vectorString}::vector(1536)) >= ${minSimilarity}
         AND (cc."expiresAt" IS NULL OR cc."expiresAt" > NOW())
       ORDER BY similarity DESC
       LIMIT ${limit}
@@ -244,17 +242,16 @@ export async function searchSimilarCaches(
     return results;
   }
 
-  // Query sem filtro de cacheType
   const results = await prisma.$queryRaw<any[]>`
     SELECT 
       cc.*,
-      1 - (cc."queryEmbedding" <=> ${vectorString}::vector(1536)) as similarity
+      1 - (cc."queryEmbedding"::text::vector(1536) <=> ${vectorString}::vector(1536)) as similarity
     FROM conversation_caches cc
     WHERE 
       cc."companyId" = ${companyId}::uuid
       AND cc."isActive" = ${isActive}
       AND cc."queryEmbedding" IS NOT NULL
-      AND 1 - (cc."queryEmbedding" <=> ${vectorString}::vector(1536)) >= ${minSimilarity}
+      AND 1 - (cc."queryEmbedding"::text::vector(1536) <=> ${vectorString}::vector(1536)) >= ${minSimilarity}
       AND (cc."expiresAt" IS NULL OR cc."expiresAt" > NOW())
     ORDER BY similarity DESC
     LIMIT ${limit}
@@ -275,7 +272,7 @@ export async function updateKnowledgeChunkEmbedding(
   const result = await prisma.$queryRaw`
     UPDATE knowledge_chunks
     SET 
-      embedding = ${vectorString}::vector(1536),
+      embedding = ${vectorString}::jsonb,
       "updatedAt" = NOW()
     WHERE id = ${chunkId}::uuid
     RETURNING *

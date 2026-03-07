@@ -14,9 +14,11 @@ export class WhatsAppService {
   private sessions: Map<string, any> = new Map();
   private sessionStatus: Map<string, SocketState> = new Map();
   private sessionQRCodes: Map<string, string> = new Map();
+  private sessionCompanyMap: Map<string, string> = new Map();
 
   async createSession(companyId: string, sessionName?: string): Promise<{ qrCode?: string; sessionName: string }> {
     const session = sessionName || `company_${companyId}`;
+    this.sessionCompanyMap.set(session, companyId);
 
     // Verificar se já existe uma sessão ativa
     if (this.sessions.has(session)) {
@@ -294,6 +296,7 @@ export class WhatsAppService {
         this.sessions.delete(sessionName);
         this.sessionStatus.delete(sessionName);
         this.sessionQRCodes.delete(sessionName);
+        this.sessionCompanyMap.delete(sessionName);
       } catch (error: any) {
         throw new Error(`Erro ao desconectar sessão: ${error.message}`);
       }
@@ -328,8 +331,27 @@ export class WhatsAppService {
     const status = this.sessionStatus.get(sessionName);
     return status === 'CONNECTED';
   }
+
+  isSessionOwnedByCompany(sessionName: string, companyId: string): boolean {
+    const owner = this.sessionCompanyMap.get(sessionName);
+    if (owner) return owner === companyId;
+    return sessionName === `company_${companyId}` || sessionName.startsWith(`company_${companyId}_`);
+  }
+
+  async getSessionsByCompany(companyId: string) {
+    const allSessions = new Set<string>();
+    this.sessions.forEach((_, name) => allSessions.add(name));
+    this.sessionStatus.forEach((_, name) => allSessions.add(name));
+
+    return Array.from(allSessions)
+      .filter(name => this.isSessionOwnedByCompany(name, companyId))
+      .map(name => ({
+        sessionName: name,
+        status: this.sessionStatus.get(name) || null,
+        hasClient: this.sessions.has(name)
+      }));
+  }
 }
 
-// Singleton instance
 export const whatsappService = new WhatsAppService();
 

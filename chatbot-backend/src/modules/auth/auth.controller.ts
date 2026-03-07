@@ -2,8 +2,10 @@ import { Request, Response } from 'express';
 import { AuthService, RegisterData, LoginData } from './auth.service';
 import { successResponse, errorResponse } from '../../utils/response';
 import { AuthenticatedRequest } from '../../middlewares/authMiddleware';
+import { isValidCPF, stripCPF, isValidPhone, stripPhone } from '../../utils/validators';
 
-/** Define status HTTP conforme a mensagem de erro (evita 401 em "credenciais inválidas" para não acionar refresh no front). */
+const FRONTEND_URL = (process.env['FRONTEND_URL'] || 'http://localhost:3000').replace(/\/$/, '');
+
 function authErrorStatus(message: string): number {
   const m = (message || '').toLowerCase();
   if (m.includes('credenciais inválidas') || m.includes('email') || m.includes('senha')) return 400;
@@ -21,18 +23,39 @@ export class AuthController {
 
   register = async (req: Request, res: Response) => {
     try {
-      const { name, email, password, phone }: RegisterData = req.body;
+      const { name, email, password, phone, cpf }: RegisterData = req.body;
 
-      if (!name?.trim() || !email?.trim() || !password || !phone?.trim()) {
-        return errorResponse(res, 'Nome, email, telefone e senha são obrigatórios', 400);
+      if (!name?.trim() || !email?.trim() || !password || !phone?.trim() || !cpf?.trim()) {
+        return errorResponse(res, 'Nome, email, CPF, telefone e senha são obrigatórios', 400);
       }
 
-      if (password.length < 6) {
-        return errorResponse(res, 'Senha deve ter pelo menos 6 caracteres', 400);
+      if (password.length < 8) {
+        return errorResponse(res, 'Senha deve ter pelo menos 8 caracteres', 400);
       }
 
-      const result = await this.authService.register({ name: name.trim(), email: email.trim(), password, phone: phone.trim() });
-      return successResponse(res, 'Usuário criado com sucesso', result, 201);
+      if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password)) {
+        return errorResponse(res, 'Senha deve conter pelo menos 1 letra e 1 número', 400);
+      }
+
+      const cleanCpf = stripCPF(cpf);
+      if (!isValidCPF(cleanCpf)) {
+        return errorResponse(res, 'CPF inválido', 400);
+      }
+
+      const cleanPhone = stripPhone(phone);
+      if (!isValidPhone(cleanPhone)) {
+        return errorResponse(res, 'Telefone inválido', 400);
+      }
+
+      const result = await this.authService.register({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        cpf: cleanCpf,
+        phone: cleanPhone,
+        password
+      });
+
+      return successResponse(res, result.message, result, 201);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erro ao cadastrar';
       const status = authErrorStatus(message);
@@ -40,7 +63,6 @@ export class AuthController {
     }
   };
 
-  /** Login: falha sempre retorna 400 (credenciais/validação). 401 fica só para token expirado (refresh). */
   login = async (req: Request, res: Response) => {
     try {
       const { email, password }: LoginData = req.body;
@@ -49,10 +71,80 @@ export class AuthController {
         return errorResponse(res, 'Email e senha são obrigatórios', 400);
       }
 
-      const result = await this.authService.login({ email: email.trim(), password });
+      const result = await this.authService.login({ email: email.trim().toLowerCase(), password });
       return successResponse(res, 'Login realizado com sucesso', result);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erro no login';
+      return errorResponse(res, message, 400);
+    }
+  };
+
+  verifyEmail = async (req: Request, res: Response) => {
+    try {
+      const token = req.query['token'] as string;
+
+      if (!token) {
+        return res.redirect(`${FRONTEND_URL}/verify-email/confirm?status=error&reason=missing_token`);
+      }
+
+      await this.authService.verifyEmail(token);
+      return res.redirect(`${FRONTEND_URL}/verify-email/confirm?status=success`);
+    } catch {
+      return res.redirect(`${FRONTEND_URL}/verify-email/confirm?status=error`);
+    }
+  };
+
+  resendVerification = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      if (!email?.trim()) {
+        return errorResponse(res, 'Email é obrigatório', 400);
+      }
+
+      await this.authService.resendVerification(email.trim().toLowerCase());
+      return successResponse(res, 'Se o email estiver cadastrado, um novo link de verificação foi enviado.', null);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao reenviar verificação';
+      return errorResponse(res, message, 400);
+    }
+  };
+
+  forgotPassword = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      if (!email?.trim()) {
+        return errorResponse(res, 'Email é obrigatório', 400);
+      }
+
+      await this.authService.forgotPassword(email.trim().toLowerCase());
+      return successResponse(res, 'Se o email estiver cadastrado, um link de redefinição foi enviado.', null);
+    } catch {
+      return successResponse(res, 'Se o email estiver cadastrado, um link de redefinição foi enviado.', null);
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    try {
+      const { token, password } = req.body;
+
+      if (!token || !password) {
+        return errorResponse(res, 'Token e nova senha são obrigatórios', 400);
+      }
+
+      if (password.length < 8) {
+        return errorResponse(res, 'Senha deve ter pelo menos 8 caracteres', 400);
+      }
+
+      if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password)) {
+        return errorResponse(res, 'Senha deve conter pelo menos 1 letra e 1 número', 400);
+      }
+
+      await this.authService.resetPassword(token, password);
+      return successResponse(res, 'Senha redefinida com sucesso', null);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao redefinir senha';
       return errorResponse(res, message, 400);
     }
   };
@@ -91,7 +183,6 @@ export class AuthController {
     }
   };
 
-  /** Refresh token: 401 = token inválido/expirado (front usa para deslogar e redirecionar). */
   refreshToken = async (req: Request, res: Response) => {
     try {
       const { refreshToken } = req.body;

@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY package.json package-lock.json* ./
 RUN npm install
-# Prisma 7 exige prisma.config.ts; no Docker usamos Prisma 6 para o schema atual (url no datasource)
-RUN npm install prisma@6 @prisma/client@6 --save-dev --save
 
 COPY prisma ./prisma/
 RUN npx prisma generate

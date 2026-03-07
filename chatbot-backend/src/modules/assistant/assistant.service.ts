@@ -15,13 +15,7 @@ export interface UpdateAssistantData {
 }
 
 export class AssistantService {
-  async create(companyId: string, userId: string, data: CreateAssistantData) {
-    const company = await prisma.company.findFirst({
-      where: { id: companyId, ownerId: userId }
-    });
-    if (!company) {
-      throw new Error('Empresa não encontrada ou você não tem permissão');
-    }
+  async create(companyId: string, data: CreateAssistantData) {
     if (!data.name?.trim()) {
       throw new Error('Nome do assistente é obrigatório');
     }
@@ -35,26 +29,19 @@ export class AssistantService {
     });
   }
 
-  async listByCompany(companyId: string, userId: string) {
-    const company = await prisma.company.findFirst({
-      where: { id: companyId, ownerId: userId }
-    });
-    if (!company) {
-      throw new Error('Empresa não encontrada ou você não tem permissão');
-    }
+  async listByCompany(companyId: string) {
     return prisma.assistant.findMany({
       where: { companyId },
       orderBy: { createdAt: 'asc' }
     });
   }
 
-  async update(assistantId: string, userId: string, data: UpdateAssistantData) {
-    const assistant = await prisma.assistant.findUnique({
-      where: { id: assistantId },
-      include: { company: true }
+  async update(assistantId: string, companyId: string, data: UpdateAssistantData) {
+    const assistant = await prisma.assistant.findFirst({
+      where: { id: assistantId, companyId }
     });
-    if (!assistant || assistant.company.ownerId !== userId) {
-      throw new Error('Assistente não encontrado ou você não tem permissão');
+    if (!assistant) {
+      throw new Error('Assistente não encontrado nesta empresa');
     }
     return prisma.assistant.update({
       where: { id: assistantId },
@@ -66,17 +53,14 @@ export class AssistantService {
     });
   }
 
-  async delete(assistantId: string, userId: string) {
-    const assistant = await prisma.assistant.findUnique({
-      where: { id: assistantId },
-      include: { company: true }
+  async delete(assistantId: string, companyId: string) {
+    const assistant = await prisma.assistant.findFirst({
+      where: { id: assistantId, companyId }
     });
-    if (!assistant || assistant.company.ownerId !== userId) {
-      throw new Error('Assistente não encontrado ou você não tem permissão');
+    if (!assistant) {
+      throw new Error('Assistente não encontrado nesta empresa');
     }
-    await prisma.assistant.delete({
-      where: { id: assistantId }
-    });
+    await prisma.assistant.delete({ where: { id: assistantId } });
     return { message: 'Assistente deletado com sucesso' };
   }
 }

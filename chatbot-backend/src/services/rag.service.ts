@@ -135,7 +135,7 @@ export class RAGService {
         if (!existingChunk.embedding) {
           await prisma.$executeRaw`
             UPDATE knowledge_chunks
-            SET embedding = ${this.formatVector(embedding)}::vector(1536)
+            SET embedding = ${this.formatVector(embedding)}::jsonb
             WHERE id = ${existingChunk.id}::uuid
           `;
         }

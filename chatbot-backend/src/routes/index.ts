@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import authRoutes from '../modules/auth/auth.routes';
-import assistantRoutes from '../modules/assistant/assistant.routes';
 import companyRoutes from '../modules/company/company.routes';
+import assistantRoutes from '../modules/assistant/assistant.routes';
 import chatbotRoutes from '../modules/chatbot/chatbot.routes';
 import messageRoutes from '../modules/message/message.routes';
 import analyticsRoutes from '../modules/analytics/analytics.routes';
@@ -10,31 +10,15 @@ import whatsappRoutes from '../modules/whatsapp/whatsapp.routes';
 
 const router = Router();
 
-// Rotas de autenticação
 router.use('/auth', authRoutes);
-
-// Rotas de assistente (paths completos: /company/... e /assistant/..., montado em / para bater com /api/company/... e /api/assistant/...)
-router.use('/', assistantRoutes);
-
-// Rotas de empresa
 router.use('/company', companyRoutes);
-
-// Rotas de chatbot
+router.use('/company', assistantRoutes);
 router.use('/chatbot', chatbotRoutes);
-
-// Rotas de mensagens
 router.use('/messages', messageRoutes);
-
-// Rotas de analytics
 router.use('/analytics', analyticsRoutes);
-
-// Rotas de planos
 router.use('/plan', planRoutes);
-
-// Rotas de WhatsApp
 router.use('/whatsapp', whatsappRoutes);
 
-// Rota de health check
 router.get('/health', (_req, res) => {
   res.json({
     success: true,

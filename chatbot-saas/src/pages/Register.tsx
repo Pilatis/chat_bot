@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import {
   Box,
@@ -14,9 +16,12 @@ import { Formik, Form, Field, FieldProps } from 'formik';
 import { useAuth } from '../hooks/useAuth';
 import { registerSchema, RegisterFormData } from '../schemas/auth.schemas';
 import { ContextaLogo } from '../components/ContextaLogo';
+import { PasswordInput } from '../components/PasswordInput';
+import { PasswordStrengthIndicator } from '../components/PasswordStrengthIndicator';
+import { cpfMask, phoneMask } from '../utils/masks';
 
 export const Register: React.FC = () => {
-  const { register, isLoading, error } = useAuth();
+  const { register, isLoading } = useAuth();
   const router = useRouter();
 
   const bg = 'whiteLight';
@@ -25,6 +30,7 @@ export const Register: React.FC = () => {
   const initialValues: RegisterFormData = {
     name: '',
     email: '',
+    cpf: '',
     phone: '',
     password: '',
     confirmPassword: '',
@@ -34,31 +40,19 @@ export const Register: React.FC = () => {
     const result = await register({
       name: values.name,
       email: values.email,
-      phone: values.phone,
+      cpf: values.cpf.replace(/\D/g, ''),
+      phone: values.phone.replace(/\D/g, ''),
       password: values.password,
     });
     if (result === 'success') {
-      router.replace('/company');
+      const encodedEmail = encodeURIComponent(values.email);
+      router.replace(`/verify-email?email=${encodedEmail}`);
     }
   };
 
   return (
-    <Flex
-      minH="100vh"
-      bg={bg}
-      align="center"
-      justify="center"
-      py={12}
-      px={4}
-    >
-      <Box
-        w="full"
-        maxW="md"
-        bg={cardBg}
-        rounded="xl"
-        shadow="lg"
-        p={8}
-      >
+    <Flex minH="100vh" bg={bg} align="center" justify="center" py={12} px={4}>
+      <Box w="full" maxW="md" bg={cardBg} rounded="xl" shadow="lg" p={8}>
         <VStack gap={6}>
           <VStack gap={2} textAlign="center">
             <ContextaLogo size="lg" />
@@ -71,9 +65,11 @@ export const Register: React.FC = () => {
             <Formik
               initialValues={initialValues}
               validationSchema={registerSchema}
+              validateOnChange
+              validateOnBlur
               onSubmit={handleSubmit}
             >
-              {({ isSubmitting }) => (
+              {({ isSubmitting, values, setFieldValue }) => (
                 <Form>
                   <VStack gap={4}>
                     <Field name="name">
@@ -86,9 +82,7 @@ export const Register: React.FC = () => {
                             borderColor={meta.touched && meta.error ? 'red.500' : undefined}
                           />
                           {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>
-                              {meta.error}
-                            </Text>
+                            <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
                           )}
                         </Box>
                       )}
@@ -105,45 +99,59 @@ export const Register: React.FC = () => {
                             borderColor={meta.touched && meta.error ? 'red.500' : undefined}
                           />
                           {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>
-                              {meta.error}
-                            </Text>
+                            <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
                           )}
                         </Box>
                       )}
                     </Field>
-                    
+
+                    <Field name="cpf">
+                      {({ field, meta }: FieldProps) => (
+                        <Box w="full">
+                          <Input
+                            {...field}
+                            placeholder="CPF"
+                            size="lg"
+                            value={cpfMask(field.value || '')}
+                            onChange={(e) => setFieldValue('cpf', cpfMask(e.target.value))}
+                            borderColor={meta.touched && meta.error ? 'red.500' : undefined}
+                          />
+                          {meta.touched && meta.error && (
+                            <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
+                          )}
+                        </Box>
+                      )}
+                    </Field>
+
                     <Field name="phone">
                       {({ field, meta }: FieldProps) => (
                         <Box w="full">
                           <Input
                             {...field}
                             placeholder="Telefone"
+                            size="lg"
+                            value={phoneMask(field.value || '')}
+                            onChange={(e) => setFieldValue('phone', phoneMask(e.target.value))}
+                            borderColor={meta.touched && meta.error ? 'red.500' : undefined}
                           />
                           {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>
-                              {meta.error}
-                            </Text>
+                            <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
                           )}
                         </Box>
                       )}
-
                     </Field>
 
                     <Field name="password">
                       {({ field, meta }: FieldProps) => (
                         <Box w="full">
-                          <Input
+                          <PasswordInput
                             {...field}
                             placeholder="Senha"
-                            type="password"
-                            size="lg"
                             borderColor={meta.touched && meta.error ? 'red.500' : undefined}
                           />
+                          <PasswordStrengthIndicator password={values.password} />
                           {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>
-                              {meta.error}
-                            </Text>
+                            <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
                           )}
                         </Box>
                       )}
@@ -152,17 +160,13 @@ export const Register: React.FC = () => {
                     <Field name="confirmPassword">
                       {({ field, meta }: FieldProps) => (
                         <Box w="full">
-                          <Input
+                          <PasswordInput
                             {...field}
                             placeholder="Confirmar senha"
-                            type="password"
-                            size="lg"
                             borderColor={meta.touched && meta.error ? 'red.500' : undefined}
                           />
                           {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>
-                              {meta.error}
-                            </Text>
+                            <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
                           )}
                         </Box>
                       )}
@@ -175,7 +179,7 @@ export const Register: React.FC = () => {
                       w="full"
                       loading={isLoading || isSubmitting}
                       loadingText="Criando conta..."
-                      sx={{ background: 'var(--gradient-primary)' }}
+                      style={{ background: 'var(--gradient-primary)' }}
                       _hover={{ opacity: 0.95 }}
                     >
                       Criar conta
@@ -194,10 +198,8 @@ export const Register: React.FC = () => {
               </Box>
             </Link>
           </HStack>
-
         </VStack>
       </Box>
     </Flex>
   );
 };
-

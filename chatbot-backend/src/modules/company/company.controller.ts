@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { CompanyService, CreateCompanyData, CreateProductData, UpdateProductData, CreateServiceData, UpdateServiceData } from './company.service';
 import { successResponse, errorResponse } from '../../utils/response';
 import { AuthenticatedRequest } from '../../middlewares/authMiddleware';
+import { TenantRequest } from '../../middlewares/companyMiddleware';
 
 export class CompanyController {
   private companyService: CompanyService;
@@ -10,272 +11,175 @@ export class CompanyController {
     this.companyService = new CompanyService();
   }
 
-  getCompany = async (req: AuthenticatedRequest, res: Response) => {
+  listCompanies = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
-      
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
+      if (!userId) return errorResponse(res, 'Usuário não autenticado', 401);
 
-      const company = await this.companyService.getCompanyByUserId(userId);
-      
-      if (!company) {
-        return successResponse(res, 'Nenhuma empresa encontrada', null);
-      }
+      const companies = await this.companyService.getCompaniesByUserId(userId);
+      return successResponse(res, 'Empresas obtidas com sucesso', companies);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao listar empresas';
+      return errorResponse(res, msg, 500);
+    }
+  };
 
+  getCompany = async (req: TenantRequest, res: Response) => {
+    try {
+      const company = await this.companyService.getCompanyById(req.company!.id);
       return successResponse(res, 'Empresa obtida com sucesso', company);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao buscar empresa';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  createOrUpdateCompany = async (req: AuthenticatedRequest, res: Response) => {
+  createCompany = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
+      if (!userId) return errorResponse(res, 'Usuário não autenticado', 401);
+
       const { name, description, whatsappNumber }: CreateCompanyData = req.body;
+      if (!name?.trim()) return errorResponse(res, 'Nome da empresa é obrigatório', 400);
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!name) {
-        return errorResponse(res, 'Nome da empresa é obrigatório', 400);
-      }
-
-      const company = await this.companyService.createOrUpdateCompany(userId, {
-        name,
-        description,
-        whatsappNumber
-      });
-
-      return successResponse(res, 'Empresa salva com sucesso', company);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+      const company = await this.companyService.createCompany(userId, { name, description, whatsappNumber });
+      return successResponse(res, 'Empresa criada com sucesso', company, 201);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao criar empresa';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  getProducts = async (req: AuthenticatedRequest, res: Response) => {
+  updateCompany = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
+      const { name, description, whatsappNumber } = req.body;
+      const company = await this.companyService.updateCompany(req.company!.id, { name, description, whatsappNumber });
+      return successResponse(res, 'Empresa atualizada com sucesso', company);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao atualizar empresa';
+      return errorResponse(res, msg, 500);
+    }
+  };
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      const products = await this.companyService.getProducts(companyId, userId);
+  getProducts = async (req: TenantRequest, res: Response) => {
+    try {
+      const products = await this.companyService.getProducts(req.company!.id);
       return successResponse(res, 'Produtos obtidos com sucesso', products);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao listar produtos';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  createProduct = async (req: AuthenticatedRequest, res: Response) => {
+  createProduct = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
       const { name, description, price, category }: CreateProductData = req.body;
+      if (!name) return errorResponse(res, 'Nome do produto é obrigatório', 400);
+      if (!category) return errorResponse(res, 'Categoria do produto é obrigatória', 400);
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      if (!name) {
-        return errorResponse(res, 'Nome do produto é obrigatório', 400);
-      }
-
-      if (!category) {
-        return errorResponse(res, 'Categoria do produto é obrigatória', 400);
-      }
-
-      const product = await this.companyService.createProduct(companyId, userId, {
+      const product = await this.companyService.createProduct(req.company!.id, {
         name,
         description: description || '',
         price: price ?? 0,
         category
       });
-
       return successResponse(res, 'Produto criado com sucesso', product, 201);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao criar produto';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  updateProduct = async (req: AuthenticatedRequest, res: Response) => {
+  updateProduct = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
       const { productId } = req.params;
+      if (!productId) return errorResponse(res, 'ID do produto é obrigatório', 400);
+
       const { name, description, price, category }: UpdateProductData = req.body;
-
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!productId) {
-        return errorResponse(res, 'ID do produto é obrigatório', 400);
-      }
-
-      const product = await this.companyService.updateProduct(productId, userId, {
-        name,
-        description,
-        price,
-        category
-      });
-
+      const product = await this.companyService.updateProduct(productId, req.company!.id, { name, description, price, category });
       return successResponse(res, 'Produto atualizado com sucesso', product);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao atualizar produto';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  deleteProduct = async (req: AuthenticatedRequest, res: Response) => {
+  deleteProduct = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
       const { productId } = req.params;
+      if (!productId) return errorResponse(res, 'ID do produto é obrigatório', 400);
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!productId) {
-        return errorResponse(res, 'ID do produto é obrigatório', 400);
-      }
-
-      const result = await this.companyService.deleteProduct(productId, userId);
+      const result = await this.companyService.deleteProduct(productId, req.company!.id);
       return successResponse(res, result.message, null);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao deletar produto';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  getServices = async (req: AuthenticatedRequest, res: Response) => {
+  getServices = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
-
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      const services = await this.companyService.getServices(companyId, userId);
+      const services = await this.companyService.getServices(req.company!.id);
       return successResponse(res, 'Serviços obtidos com sucesso', services);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao listar serviços';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  createService = async (req: AuthenticatedRequest, res: Response) => {
+  createService = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
       const { name, description, price, category }: CreateServiceData = req.body;
+      if (!name) return errorResponse(res, 'Nome do serviço é obrigatório', 400);
+      if (!category) return errorResponse(res, 'Categoria do serviço é obrigatória', 400);
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      if (!name) {
-        return errorResponse(res, 'Nome do serviço é obrigatório', 400);
-      }
-
-      if (!category) {
-        return errorResponse(res, 'Categoria do serviço é obrigatória', 400);
-      }
-
-      const service = await this.companyService.createService(companyId, userId, {
+      const service = await this.companyService.createService(req.company!.id, {
         name,
         description: description || '',
         price: price ?? 0,
         category
       });
-
       return successResponse(res, 'Serviço criado com sucesso', service, 201);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao criar serviço';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  updateService = async (req: AuthenticatedRequest, res: Response) => {
+  updateService = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
       const { serviceId } = req.params;
-      const { name, description, price, category }: UpdateServiceData = req.body;
+      if (!serviceId) return errorResponse(res, 'ID do serviço é obrigatório', 400);
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!serviceId) {
-        return errorResponse(res, 'ID do serviço é obrigatório', 400);
-      }
-
-      const service = await this.companyService.updateService(serviceId, userId, {
-        name,
-        description,
-        price,
-        category
-      });
-
+      const { name, description, price, category } = req.body;
+      const service = await this.companyService.updateService(serviceId, req.company!.id, { name, description, price, category });
       return successResponse(res, 'Serviço atualizado com sucesso', service);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao atualizar serviço';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  deleteService = async (req: AuthenticatedRequest, res: Response) => {
+  deleteService = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
       const { serviceId } = req.params;
+      if (!serviceId) return errorResponse(res, 'ID do serviço é obrigatório', 400);
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!serviceId) {
-        return errorResponse(res, 'ID do serviço é obrigatório', 400);
-      }
-
-      const result = await this.companyService.deleteService(serviceId, userId);
+      const result = await this.companyService.deleteService(serviceId, req.company!.id);
       return successResponse(res, result.message, null);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao deletar serviço';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  getCompanyStats = async (req: AuthenticatedRequest, res: Response) => {
+  getCompanyStats = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
-
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      const stats = await this.companyService.getCompanyStats(companyId, userId);
+      const stats = await this.companyService.getCompanyStats(req.company!.id);
       return successResponse(res, 'Estatísticas obtidas com sucesso', stats);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao obter estatísticas';
+      return errorResponse(res, msg, 500);
     }
   };
 }

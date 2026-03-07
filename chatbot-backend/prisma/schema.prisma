@@ -8,17 +8,23 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  phone     String?   @unique
-  role      UserRole  @default(CLIENT)
-  planType  PlanTypes @default(FREE)
-  companies Company[]
-  userPlan  UserPlan?
+  id                     String    @id @default(uuid())
+  name                   String
+  email                  String    @unique
+  password               String
+  cpf                    String    @unique
+  phone                  String    @unique
+  isEmailVerified        Boolean   @default(false)
+  emailVerifyTokenHash   String?
+  emailVerifyExpires     DateTime?
+  resetPasswordTokenHash String?
+  resetPasswordExpires   DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  role                   UserRole  @default(CLIENT)
+  planType               PlanTypes @default(FREE)
+  companies              Company[]
+  userPlan               UserPlan?
 
   @@map("users")
 }

@@ -1,7 +1,9 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AnalyticsService, TimeRange, PeriodFilter } from './analytics.service';
 import { successResponse, errorResponse } from '../../utils/response';
-import { AuthenticatedRequest } from '../../middlewares/authMiddleware';
+import { TenantRequest } from '../../middlewares/companyMiddleware';
+
+const VALID_PERIODS: PeriodFilter[] = ['today', '7', '14', '30'];
 
 export class AnalyticsController {
   private analyticsService: AnalyticsService;
@@ -10,46 +12,27 @@ export class AnalyticsController {
     this.analyticsService = new AnalyticsService();
   }
 
-  getOverview = async (req: AuthenticatedRequest, res: Response) => {
+  getOverview = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
+      const userId = req.user!.userId;
       const period = (req.query['period'] as PeriodFilter) || '7';
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      // Validar período
-      const validPeriods: PeriodFilter[] = ['today', '7', '14', '30'];
-      if (!validPeriods.includes(period)) {
+      if (!VALID_PERIODS.includes(period)) {
         return errorResponse(res, 'Período inválido. Use: today, 7, 14 ou 30', 400);
       }
 
-      const overview = await this.analyticsService.getOverview(companyId, userId, period);
+      const overview = await this.analyticsService.getOverview(req.company!.id, userId, period);
       return successResponse(res, 'Visão geral obtida com sucesso', overview);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao obter visão geral';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  getMessagesByTimeRange = async (req: AuthenticatedRequest, res: Response) => {
+  getMessagesByTimeRange = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
+      const userId = req.user!.userId;
       const { startDate, endDate } = req.query;
-
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
 
       if (!startDate || !endDate) {
         return errorResponse(res, 'Data de início e fim são obrigatórias', 400);
@@ -60,104 +43,72 @@ export class AnalyticsController {
         endDate: new Date(endDate as string)
       };
 
-      const result = await this.analyticsService.getMessagesByTimeRange(companyId, userId, timeRange);
+      const result = await this.analyticsService.getMessagesByTimeRange(req.company!.id, userId, timeRange);
       return successResponse(res, 'Mensagens por período obtidas com sucesso', result);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao obter mensagens por período';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  getHourlyDistribution = async (req: AuthenticatedRequest, res: Response) => {
+  getHourlyDistribution = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
+      const userId = req.user!.userId;
       const period = (req.query['period'] as PeriodFilter) || '7';
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      // Validar período
-      const validPeriods: PeriodFilter[] = ['today', '7', '14', '30'];
-      if (!validPeriods.includes(period)) {
+      if (!VALID_PERIODS.includes(period)) {
         return errorResponse(res, 'Período inválido. Use: today, 7, 14 ou 30', 400);
       }
 
-      const distribution = await this.analyticsService.getHourlyDistribution(companyId, userId, period);
+      const distribution = await this.analyticsService.getHourlyDistribution(req.company!.id, userId, period);
       return successResponse(res, 'Distribuição horária obtida com sucesso', distribution);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao obter distribuição horária';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  getTopKeywords = async (req: AuthenticatedRequest, res: Response) => {
+  getTopKeywords = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
+      const userId = req.user!.userId;
       const limit = parseInt(req.query['limit'] as string) || 10;
       const period = (req.query['period'] as PeriodFilter) || '7';
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      // Validar período
-      const validPeriods: PeriodFilter[] = ['today', '7', '14', '30'];
-      if (!validPeriods.includes(period)) {
+      if (!VALID_PERIODS.includes(period)) {
         return errorResponse(res, 'Período inválido. Use: today, 7, 14 ou 30', 400);
       }
 
-      const keywords = await this.analyticsService.getTopKeywords(companyId, userId, limit, period);
+      const keywords = await this.analyticsService.getTopKeywords(req.company!.id, userId, limit, period);
       return successResponse(res, 'Palavras-chave obtidas com sucesso', keywords);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao obter palavras-chave';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  getDashboardData = async (req: AuthenticatedRequest, res: Response) => {
+  getDashboardData = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
+      const userId = req.user!.userId;
       const period = (req.query['period'] as PeriodFilter) || '7';
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      // Validar período
-      const validPeriods: PeriodFilter[] = ['today', '7', '14', '30'];
-      if (!validPeriods.includes(period)) {
+      if (!VALID_PERIODS.includes(period)) {
         return errorResponse(res, 'Período inválido. Use: today, 7, 14 ou 30', 400);
       }
 
-      // Obter todos os dados do dashboard em paralelo
       const [overview, hourlyDistribution, topKeywords] = await Promise.all([
-        this.analyticsService.getOverview(companyId, userId, period),
-        this.analyticsService.getHourlyDistribution(companyId, userId, period),
-        this.analyticsService.getTopKeywords(companyId, userId, 5, period)
+        this.analyticsService.getOverview(req.company!.id, userId, period),
+        this.analyticsService.getHourlyDistribution(req.company!.id, userId, period),
+        this.analyticsService.getTopKeywords(req.company!.id, userId, 5, period)
       ]);
 
-      const dashboardData = {
+      return successResponse(res, 'Dados do dashboard obtidos com sucesso', {
         overview,
         hourlyDistribution,
         topKeywords
-      };
-
-      return successResponse(res, 'Dados do dashboard obtidos com sucesso', dashboardData);
-    } catch (error: any) {
-      return errorResponse(res, error.message, 500);
+      });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao obter dados do dashboard';
+      return errorResponse(res, msg, 500);
     }
   };
 }

@@ -1,9 +1,10 @@
-// Tipos para autenticação
 export interface User {
   id: string;
   name: string;
   email: string;
   phone?: string | null;
+  cpf?: string | null;
+  isEmailVerified?: boolean;
   createdAt: string;
   companies?: Array<{
     id: string;
@@ -27,7 +28,17 @@ export interface LoginData {
 export interface RegisterData {
   name: string;
   email: string;
+  cpf: string;
   phone: string;
+  password: string;
+}
+
+export interface ForgotPasswordData {
+  email: string;
+}
+
+export interface ResetPasswordData {
+  token: string;
   password: string;
 }
 
@@ -57,5 +68,8 @@ export interface AuthContextType extends AuthState {
   logout: () => void;
   refreshUser: () => Promise<void>;
   updateProfile: (data: UpdateProfileData) => Promise<AuthResult>;
+  resendVerification: (email: string) => Promise<AuthResult>;
+  forgotPassword: (email: string) => Promise<AuthResult>;
+  resetPassword: (token: string, password: string) => Promise<AuthResult>;
   clearError: () => void;
 }

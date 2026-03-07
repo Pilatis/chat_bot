@@ -19,7 +19,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const isAuthenticated = !!user;
 
-  // Quando a API detecta 401 (token expirado), desloga e redireciona; este listener limpa o estado do usuário
   useEffect(() => {
     const onSessionExpired = () => {
       removeLocalItem('accessToken');
@@ -31,7 +30,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => window.removeEventListener('auth:session-expired', onSessionExpired);
   }, []);
 
-  // Verificar se há token salvo e carregar dados do usuário
   useEffect(() => {
     const initializeAuth = async () => {
       const token = getLocalItem('accessToken');
@@ -42,12 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (response.data?.success && response.data?.data) {
             setUser(response.data.data);
           } else {
-            // Token inválido, limpar storage
             removeLocalItem('accessToken');
             removeLocalItem('refreshToken');
           }
-        } catch (error) {
-          // Erro ao carregar perfil, limpar storage
+        } catch {
           removeLocalItem('accessToken');
           removeLocalItem('refreshToken');
         }
@@ -74,7 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         showSuccess(response.data?.message || 'Login realizado com sucesso');
         return 'success';
       } else {
-          console.log('caiu aqui erro', response)
         const msg = getBackendMessage(response, 'Erro no login');
         showError(msg);
         setError(msg);
@@ -96,13 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setError(null);
       const response = await api.post('/auth/register', data);
 
-      if (response.data?.success && response.data?.data) {
-        const { user: userData, accessToken, refreshToken } = response.data.data;
-
-        setLocalItem('accessToken', accessToken);
-        setLocalItem('refreshToken', refreshToken);
-        setUser(userData);
-        showSuccess(response.data?.message || 'Cadastro realizado com sucesso');
+      if (response.data?.success) {
+        showSuccess(response.data?.message || 'Conta criada! Verifique seu email.');
         return 'success';
       }
       const msg = getBackendMessage(response, 'Erro no registro');
@@ -120,7 +110,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = (): void => {
-    // Limpar tokens e dados do usuário
     removeLocalItem('accessToken');
     removeLocalItem('refreshToken');
     setUser(null);
@@ -160,6 +149,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const resendVerification = async (email: string): Promise<AuthResult> => {
+    try {
+      setIsLoading(true);
+      const response = await api.post('/auth/resend-verification', { email });
+      if (response.data?.success) {
+        showSuccess(response.data?.message || 'Email de verificação reenviado');
+        return 'success';
+      }
+      const msg = getBackendMessage(response, 'Erro ao reenviar verificação');
+      showError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao reenviar verificação';
+      showError(msg);
+      return 'failure';
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const forgotPassword = async (email: string): Promise<AuthResult> => {
+    try {
+      setIsLoading(true);
+      const response = await api.post('/auth/forgot-password', { email });
+      if (response.data?.success) {
+        showSuccess(response.data?.message || 'Link de redefinição enviado');
+        return 'success';
+      }
+      const msg = getBackendMessage(response, 'Erro ao solicitar redefinição');
+      showError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao solicitar redefinição';
+      showError(msg);
+      return 'failure';
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetPassword = async (token: string, password: string): Promise<AuthResult> => {
+    try {
+      setIsLoading(true);
+      const response = await api.post('/auth/reset-password', { token, password });
+      if (response.data?.success) {
+        showSuccess(response.data?.message || 'Senha redefinida com sucesso');
+        return 'success';
+      }
+      const msg = getBackendMessage(response, 'Erro ao redefinir senha');
+      showError(msg);
+      return 'failure';
+    } catch (err: unknown) {
+      const msg = (err as Error).message || 'Erro ao redefinir senha';
+      showError(msg);
+      return 'failure';
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const clearError = (): void => {
     setError(null);
   };
@@ -180,6 +229,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     logout,
     refreshUser,
     updateProfile,
+    resendVerification,
+    forgotPassword,
+    resetPassword,
     clearError
   };
 

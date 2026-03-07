@@ -1,30 +1,28 @@
 import { Router } from 'express';
 import { CompanyController } from './company.controller';
 import { authMiddleware } from '../../middlewares/authMiddleware';
+import { companyMiddleware } from '../../middlewares/companyMiddleware';
 
 const router = Router();
 const companyController = new CompanyController();
 
-// Todas as rotas de empresa requerem autenticação
 router.use(authMiddleware);
 
-// Rotas da empresa
-router.get('/', companyController.getCompany);
-router.post('/', companyController.createOrUpdateCompany);
+router.get('/', companyController.listCompanies);
+router.post('/', companyController.createCompany);
+router.get('/:companyId', companyMiddleware, companyController.getCompany);
+router.put('/:companyId', companyMiddleware, companyController.updateCompany);
 
-// Rotas de produtos
-router.get('/:companyId/products', companyController.getProducts);
-router.post('/:companyId/products', companyController.createProduct);
-router.put('/products/:productId', companyController.updateProduct);
-router.delete('/products/:productId', companyController.deleteProduct);
+router.get('/:companyId/products', companyMiddleware, companyController.getProducts);
+router.post('/:companyId/products', companyMiddleware, companyController.createProduct);
+router.put('/:companyId/products/:productId', companyMiddleware, companyController.updateProduct);
+router.delete('/:companyId/products/:productId', companyMiddleware, companyController.deleteProduct);
 
-// Rotas de serviços
-router.get('/:companyId/services', companyController.getServices);
-router.post('/:companyId/services', companyController.createService);
-router.put('/services/:serviceId', companyController.updateService);
-router.delete('/services/:serviceId', companyController.deleteService);
+router.get('/:companyId/services', companyMiddleware, companyController.getServices);
+router.post('/:companyId/services', companyMiddleware, companyController.createService);
+router.put('/:companyId/services/:serviceId', companyMiddleware, companyController.updateService);
+router.delete('/:companyId/services/:serviceId', companyMiddleware, companyController.deleteService);
 
-// Estatísticas
-router.get('/:companyId/stats', companyController.getCompanyStats);
+router.get('/:companyId/stats', companyMiddleware, companyController.getCompanyStats);
 
 export default router;

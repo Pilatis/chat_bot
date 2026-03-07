@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import {
   Box,
@@ -14,6 +16,7 @@ import { Formik, Form, Field, FieldProps } from 'formik';
 import { useAuth } from '../hooks/useAuth';
 import { loginSchema, LoginFormData } from '../schemas/auth.schemas';
 import { ContextaLogo } from '../components/ContextaLogo';
+import { PasswordInput } from '../components/PasswordInput';
 
 export const Login: React.FC = () => {
   const { login, isLoading, clearError } = useAuth();
@@ -85,11 +88,9 @@ export const Login: React.FC = () => {
                           const showError = hasSubmitted && meta.error;
                           return (
                             <Box w="full">
-                              <Input
+                              <PasswordInput
                                 {...field}
                                 placeholder="Senha"
-                                type="password"
-                                size="lg"
                                 borderColor={showError ? 'red.500' : undefined}
                               />
                               {showError && (
@@ -101,6 +102,14 @@ export const Login: React.FC = () => {
                           );
                         }}
                       </Field>
+
+                      <Box w="full" textAlign="right">
+                        <Link href="/forgot-password">
+                          <Text as="span" fontSize="sm" color="contexta.500" _hover={{ color: 'contexta.600' }}>
+                            Esqueci minha senha
+                          </Text>
+                        </Link>
+                      </Box>
 
                       <Button
                         type="submit"
@@ -129,20 +138,6 @@ export const Login: React.FC = () => {
               </Box>
             </Link>
           </HStack>
-
-          <Box
-            p={4}
-            bg="contexta.50"
-            rounded="md"
-            w="full"
-            textAlign="center"
-            border="1px"
-            borderColor="contexta.200"
-          >
-            <Text fontSize="small" color="contexta.700">
-              <strong>Demo:</strong> admin@botatende.com / 123456
-            </Text>
-          </Box>
         </VStack>
       </Box>
     </Flex>

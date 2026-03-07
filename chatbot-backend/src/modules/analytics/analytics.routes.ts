@@ -1,26 +1,17 @@
 import { Router } from 'express';
 import { AnalyticsController } from './analytics.controller';
 import { authMiddleware } from '../../middlewares/authMiddleware';
+import { companyMiddleware } from '../../middlewares/companyMiddleware';
 
 const router = Router();
 const analyticsController = new AnalyticsController();
 
-// Todas as rotas de analytics requerem autenticação
 router.use(authMiddleware);
 
-// Visão geral das estatísticas
-router.get('/:companyId/overview', analyticsController.getOverview);
-
-// Mensagens por período
-router.get('/:companyId/messages-by-range', analyticsController.getMessagesByTimeRange);
-
-// Distribuição horária
-router.get('/:companyId/hourly-distribution', analyticsController.getHourlyDistribution);
-
-// Palavras-chave mais mencionadas
-router.get('/:companyId/top-keywords', analyticsController.getTopKeywords);
-
-// Dados completos do dashboard
-router.get('/:companyId/dashboard', analyticsController.getDashboardData);
+router.get('/:companyId/overview', companyMiddleware, analyticsController.getOverview);
+router.get('/:companyId/messages-by-range', companyMiddleware, analyticsController.getMessagesByTimeRange);
+router.get('/:companyId/hourly-distribution', companyMiddleware, analyticsController.getHourlyDistribution);
+router.get('/:companyId/top-keywords', companyMiddleware, analyticsController.getTopKeywords);
+router.get('/:companyId/dashboard', companyMiddleware, analyticsController.getDashboardData);
 
 export default router;

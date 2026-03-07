@@ -1,32 +1,18 @@
 import { Router } from 'express';
 import { WhatsAppController } from './whatsapp.controller';
 import { authMiddleware } from '../../middlewares/authMiddleware';
+import { companyMiddleware } from '../../middlewares/companyMiddleware';
 
 const router = Router();
 const whatsappController = new WhatsAppController();
 
-// Todas as rotas de WhatsApp requerem autenticação
 router.use(authMiddleware);
 
-// Criar nova sessão do WhatsApp
-router.post('/session', whatsappController.createSession);
-
-// Obter QR Code de uma sessão
-router.get('/session/:sessionName/qrcode', whatsappController.getQRCode);
-
-// Obter status de uma sessão
-router.get('/session/:sessionName/status', whatsappController.getSessionStatus);
-
-// Desconectar sessão
-router.delete('/session/:sessionName', whatsappController.disconnectSession);
-
-// Listar todas as sessões
-router.get('/sessions', whatsappController.getAllSessions);
-
-// Enviar mensagem via WhatsApp
-router.post('/send-message', whatsappController.sendMessage);
+router.post('/:companyId/session', companyMiddleware, whatsappController.createSession);
+router.get('/:companyId/session/:sessionName/qrcode', companyMiddleware, whatsappController.getQRCode);
+router.get('/:companyId/session/:sessionName/status', companyMiddleware, whatsappController.getSessionStatus);
+router.delete('/:companyId/session/:sessionName', companyMiddleware, whatsappController.disconnectSession);
+router.get('/:companyId/sessions', companyMiddleware, whatsappController.getSessions);
+router.post('/:companyId/send-message', companyMiddleware, whatsappController.sendMessage);
 
 export default router;
-
-
-

@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AssistantService, CreateAssistantData, UpdateAssistantData } from './assistant.service';
 import { successResponse, errorResponse } from '../../utils/response';
-import { AuthenticatedRequest } from '../../middlewares/authMiddleware';
+import { TenantRequest } from '../../middlewares/companyMiddleware';
 
 export class AssistantController {
   private assistantService: AssistantService;
@@ -10,86 +10,54 @@ export class AssistantController {
     this.assistantService = new AssistantService();
   }
 
-  create = async (req: AuthenticatedRequest, res: Response) => {
+  create = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
       const body: CreateAssistantData = req.body;
-
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      const assistant = await this.assistantService.create(companyId, userId, body);
-      return successResponse(res, 'Assistente criado com sucesso', assistant);
-    } catch (error: any) {
-      const status = error.message?.includes('permissão') ? 403 : error.message?.includes('obrigatório') ? 400 : 500;
-      return errorResponse(res, error.message || 'Erro ao criar assistente', status);
+      const assistant = await this.assistantService.create(req.company!.id, body);
+      return successResponse(res, 'Assistente criado com sucesso', assistant, 201);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao criar assistente';
+      const status = msg.includes('obrigatório') ? 400 : 500;
+      return errorResponse(res, msg, status);
     }
   };
 
-  listByCompany = async (req: AuthenticatedRequest, res: Response) => {
+  listByCompany = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
-      const { companyId } = req.params;
-
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-      if (!companyId) {
-        return errorResponse(res, 'ID da empresa é obrigatório', 400);
-      }
-
-      const assistants = await this.assistantService.listByCompany(companyId, userId);
+      const assistants = await this.assistantService.listByCompany(req.company!.id);
       return successResponse(res, 'Assistentes obtidos com sucesso', assistants);
-    } catch (error: any) {
-      const status = error.message?.includes('permissão') ? 403 : 500;
-      return errorResponse(res, error.message || 'Erro ao listar assistentes', status);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao listar assistentes';
+      return errorResponse(res, msg, 500);
     }
   };
 
-  update = async (req: AuthenticatedRequest, res: Response) => {
+  update = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
       const { assistantId } = req.params;
+      if (!assistantId) return errorResponse(res, 'ID do assistente é obrigatório', 400);
+
       const body: UpdateAssistantData = req.body;
-
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-      if (!assistantId) {
-        return errorResponse(res, 'ID do assistente é obrigatório', 400);
-      }
-
-      const assistant = await this.assistantService.update(assistantId, userId, body);
+      const assistant = await this.assistantService.update(assistantId, req.company!.id, body);
       return successResponse(res, 'Assistente atualizado com sucesso', assistant);
-    } catch (error: any) {
-      const status = error.message?.includes('permissão') || error.message?.includes('não encontrado') ? 403 : 500;
-      return errorResponse(res, error.message || 'Erro ao atualizar assistente', status);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao atualizar assistente';
+      const status = msg.includes('não encontrado') ? 404 : 500;
+      return errorResponse(res, msg, status);
     }
   };
 
-  delete = async (req: AuthenticatedRequest, res: Response) => {
+  delete = async (req: TenantRequest, res: Response) => {
     try {
-      const userId = req.user?.userId;
       const { assistantId } = req.params;
+      if (!assistantId) return errorResponse(res, 'ID do assistente é obrigatório', 400);
 
-      if (!userId) {
-        return errorResponse(res, 'Usuário não autenticado', 401);
-      }
-
-      if (!assistantId) {
-        return errorResponse(res, 'ID do assistente é obrigatório', 400);
-      }
-
-      const assistant = await this.assistantService.delete(assistantId, userId);
-      return successResponse(res, 'Assistente deletado com sucesso', assistant);
-    } catch (error: any) {
-      const status = error.message?.includes('permissão') || error.message?.includes('não encontrado') ? 403 : 500;
-      return errorResponse(res, error.message || 'Erro ao deletar assistente', status);
+      const result = await this.assistantService.delete(assistantId, req.company!.id);
+      return successResponse(res, 'Assistente deletado com sucesso', result);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao deletar assistente';
+      const status = msg.includes('não encontrado') ? 404 : 500;
+      return errorResponse(res, msg, status);
     }
-  }
+  };
 }

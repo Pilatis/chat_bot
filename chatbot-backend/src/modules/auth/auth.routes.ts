@@ -1,21 +1,20 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
 import { authMiddleware } from '../../middlewares/authMiddleware';
-import { adminMiddleware } from '../../middlewares/adminMiddleware';
+import { loginLimiter, registerLimiter, forgotPasswordLimiter, resendVerificationLimiter } from '../../middlewares/rateLimiter';
 
 const router = Router();
 const authController = new AuthController();
 
-// Rotas públicas
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+router.post('/register', registerLimiter, authController.register);
+router.post('/login', loginLimiter, authController.login);
+router.get('/verify-email', authController.verifyEmail);
+router.post('/resend-verification', resendVerificationLimiter, authController.resendVerification);
+router.post('/forgot-password', forgotPasswordLimiter, authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 router.post('/refresh-token', authController.refreshToken);
 
-// Rotas protegidas
 router.get('/profile', authMiddleware, authController.getProfile);
 router.put('/profile', authMiddleware, authController.updateProfile);
-
-// Exemplo de rota apenas para admin (descomente e implemente conforme necessário)
-// router.get('/admin/users', authMiddleware, adminMiddleware, authController.getAllUsers);
 
 export default router;
