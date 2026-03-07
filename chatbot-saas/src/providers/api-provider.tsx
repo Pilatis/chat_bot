@@ -8,7 +8,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '../hooks/useToast';
 import { useUnauthorizedHandler } from '../hooks/useUnauthorizedHandler';
 import { getLocalItem, setLocalItem, setSessionItem } from '@/utils/storage';
-import { getApiErrorMessage } from '@/utils/api';
+import { getApiErrorMessage, isLoginFailure401 } from '@/utils/api';
 
 // Tipos para as respostas da API
 interface ApiResponse<T = any> {
@@ -157,8 +157,12 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         return { errors: 'Servidor indisponível', status: 0 };
       }
 
-      // 401: tenta refresh; se falhar, o hook já limpa sessão, exibe toast e redireciona
-      if (axiosError.response?.status === 401) {
+      const status401 = axiosError.response?.status === 401;
+      const body401 = axiosError.response?.data;
+      if (status401 && isLoginFailure401(401, body401)) {
+        return { errors: typeof body401 === 'object' ? body401 : { message: getApiErrorMessage(401, body401) }, status: 401 };
+      }
+      if (status401) {
         try {
           const originalRequest = () => apiClient.get(path, { params });
           const response = await handleUnauthorized(originalRequest);
@@ -193,7 +197,12 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
         return { errors: 'Servidor indisponível', status: 0 };
       }
 
-      if (axiosError.response?.status === 401) {
+      const status401 = axiosError.response?.status === 401;
+      const body401 = axiosError.response?.data;
+      if (status401 && isLoginFailure401(401, body401)) {
+        return { errors: typeof body401 === 'object' ? body401 : { message: getApiErrorMessage(401, body401) }, status: 401 };
+      }
+      if (status401) {
         try {
           const originalRequest = () => apiClient.post(path, params);
           const response = await handleUnauthorized(originalRequest);
@@ -229,7 +238,12 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
           return { errors: 'Servidor indisponível', status: 0 };
         }
 
-        if (axiosError.response?.status === 401) {
+        const status401 = axiosError.response?.status === 401;
+        const body401 = axiosError.response?.data;
+        if (status401 && isLoginFailure401(401, body401)) {
+          return { errors: typeof body401 === 'object' ? body401 : { message: getApiErrorMessage(401, body401) }, status: 401 };
+        }
+        if (status401) {
           try {
             const originalRequest = () => apiClient.put(path, params);
             const response = await handleUnauthorized(originalRequest);
@@ -264,7 +278,12 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({
           return { errors: 'Servidor indisponível', status: 0 };
         }
 
-        if (axiosError.response?.status === 401) {
+        const status401 = axiosError.response?.status === 401;
+        const body401 = axiosError.response?.data;
+        if (status401 && isLoginFailure401(401, body401)) {
+          return { errors: typeof body401 === 'object' ? body401 : { message: getApiErrorMessage(401, body401) }, status: 401 };
+        }
+        if (status401) {
           try {
             const originalRequest = () => apiClient.delete(path, params);
             const response = await handleUnauthorized(originalRequest);

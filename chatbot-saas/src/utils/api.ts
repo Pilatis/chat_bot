@@ -45,3 +45,25 @@ export function getApiErrorMessage(
   if (typeof errors === 'string') return errors;
   return DEFAULT_MESSAGES[status] ?? fallback ?? 'Ocorreu um erro. Tente novamente.';
 }
+
+/** Mensagens que indicam falha de login (credenciais), não token expirado. */
+const LOGIN_FAILURE_MESSAGES = [
+  'credenciais inválidas',
+  'credenciales inválidas',
+  'invalid credentials',
+  'email ou senha',
+  'usuário não encontrado',
+  'senha incorreta'
+];
+
+/**
+ * Quando o back retorna 401 com "Credenciais inválidas", não devemos acionar refresh/sessão expirada.
+ * Retorna true se for esse caso (apenas devolver o erro para o login exibir o toast).
+ */
+export function isLoginFailure401(status: number, body: unknown): boolean {
+  if (status !== 401) return false;
+  const message = typeof body === 'object' && body !== null && 'message' in body
+    ? String((body as { message: unknown }).message ?? '').toLowerCase()
+    : '';
+  return LOGIN_FAILURE_MESSAGES.some((m) => message.includes(m));
+}
