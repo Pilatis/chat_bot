@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box, VStack, HStack, Text, Input, Textarea, Button } from '@chakra-ui/react';
-import { Modal } from '@/components/modal';
+import { Modal } from '@/components/Modal';
 import type { Assistant, UpdateAssistantData } from '@/types/assistant.types';
 import { phoneMask } from '@/utils/masks';
 

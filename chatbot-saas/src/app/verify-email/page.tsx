@@ -3,16 +3,17 @@
 import React, { useState, Suspense } from 'react';
 import { Box, Flex, VStack, Text, Button } from '@chakra-ui/react';
 import { FiMail } from 'react-icons/fi';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { ContextaLogo } from '../../components/ContextaLogo';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
-  const email = searchParams.get('email') || '';
+  const email = searchParams !== null ? searchParams.get('email') : '';
   const { resendVerification, isLoading } = useAuth();
   const [sent, setSent] = useState(false);
-
+  const router = useRouter();
+  
   const handleResend = async () => {
     if (!email) return;
     const result = await resendVerification(email);
@@ -52,7 +53,7 @@ function VerifyEmailContent() {
               {sent ? 'Email reenviado!' : 'Reenviar email de verificação'}
             </Button>
 
-            <Button as="a" href="/login" variant="ghost" colorPalette="gray" w="full">
+            <Button onClick={() => router.push('/login')} variant="ghost" colorPalette="gray" w="full">
               Voltar para o login
             </Button>
           </VStack>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { HStack, Text, Button } from '@chakra-ui/react';
-import { Modal } from '@/components/modal';
+import { Modal } from '@/components/Modal';
 
 export interface DeleteAssistantModalProps {
   isOpen: boolean;

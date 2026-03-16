@@ -81,7 +81,6 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     <Box position="relative" w={width} ref={selectRef}>
       <Box
         as="button"
-        type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         w="full"
         bg="white"
@@ -99,8 +98,6 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           borderColor: 'contexta.500',
           boxShadow: '0 0 0 1px var(--chakra-colors-contexta-500)',
         }}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        disabled={disabled}
         style={{
           ...currentSize,
           display: 'flex',
@@ -144,7 +141,6 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
               <Box
                 key={option.value}
                 as="button"
-                type="button"
                 w="full"
                 px={currentSize.padding.split(' ')[1]}
                 py={currentSize.padding.split(' ')[0]}

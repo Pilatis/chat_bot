@@ -1,14 +1,15 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import { Box, Flex, VStack, Text, Button } from '@chakra-ui/react';
+import { Box, Flex, VStack, Text } from '@chakra-ui/react';
 import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { ContextaLogo } from '../../../components/ContextaLogo';
 
 function ConfirmContent() {
   const searchParams = useSearchParams();
-  const status = searchParams.get('status');
+  const status = searchParams !== null ? searchParams.get('status') : null;
   const isSuccess = status === 'success';
 
   return (
@@ -38,17 +39,43 @@ function ConfirmContent() {
 
           <VStack gap={3} w="full">
             {isSuccess ? (
-              <Button as="a" href="/login" w="full" bg="contexta.500" color="white" _hover={{ bg: 'contexta.600' }}>
-                Ir para o login
-              </Button>
+              <Link href="/login" style={{ width: '100%' }}>
+                <Box
+                  w="full"
+                  bg="contexta.500"
+                  color="white"
+                  py={3}
+                  px={4}
+                  borderRadius="md"
+                  fontWeight="600"
+                  textAlign="center"
+                  _hover={{ bg: 'contexta.600' }}
+                >
+                  Ir para o login
+                </Box>
+              </Link>
             ) : (
               <>
-                <Button as="a" href="/verify-email" w="full" variant="outline" colorPalette="purple">
-                  Solicitar novo link
-                </Button>
-                <Button as="a" href="/login" variant="ghost" colorPalette="gray" w="full">
-                  Voltar para o login
-                </Button>
+                <Link href="/verify-email" style={{ width: '100%' }}>
+                  <Box
+                    w="full"
+                    py={3}
+                    px={4}
+                    borderRadius="md"
+                    borderWidth="1px"
+                    borderColor="gray.300"
+                    textAlign="center"
+                    color="gray.700"
+                    _hover={{ bg: 'gray.50' }}
+                  >
+                    Solicitar novo link
+                  </Box>
+                </Link>
+                <Link href="/login" style={{ width: '100%' }}>
+                  <Box w="full" py={3} textAlign="center" color="gray.600" _hover={{ bg: 'gray.50' }}>
+                    Voltar para o login
+                  </Box>
+                </Link>
               </>
             )}
           </VStack>
