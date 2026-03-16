@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Providers } from './Providers';
+import 'intro.js/introjs.css';
+import 'intro.js/themes/introjs-modern.css';
 
 export const metadata: Metadata = {
   title: 'Contexta',

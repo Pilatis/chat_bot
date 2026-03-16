@@ -155,7 +155,7 @@ export const Company: React.FC = () => {
   return (
     <Box>
       <VStack gap={6} align="stretch">
-        <Box>
+        <Box id="tour-company-title">
           <Text fontSize="h2" fontWeight="h2" color="grayBold" mb={2}>
             Configurações da Empresa
           </Text>
@@ -164,7 +164,7 @@ export const Company: React.FC = () => {
           </Text>
         </Box>
 
-        <Card>
+        <Card id="tour-company-form">
           <VStack gap={6} align="stretch">
             <Text fontSize="lg" fontWeight="semibold" color="grayBold">
               Dados da Empresa
@@ -218,6 +218,7 @@ export const Company: React.FC = () => {
               loading={isSaving}
               disabled={isSaving}
               alignSelf="flex-start"
+              id="tour-company-save"
             >
               <FiSave />
               Salvar Informações
@@ -255,6 +256,7 @@ export const Company: React.FC = () => {
             )}
 
             <Box
+              id="tour-company-products"
               opacity={canAddProductsOrServices ? 1 : 0.7}
               pointerEvents={canAddProductsOrServices ? 'auto' : 'none'}
             >
@@ -426,6 +428,7 @@ export const Company: React.FC = () => {
             <Box h="1px" bg="gray.200" />
 
             <Box
+              id="tour-company-services"
               opacity={canAddProductsOrServices ? 1 : 0.7}
               pointerEvents={canAddProductsOrServices ? 'auto' : 'none'}
             >

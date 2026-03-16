@@ -11,13 +11,15 @@ export class CompanyController {
     this.companyService = new CompanyService();
   }
 
+  /** GET /company — retorna a empresa do usuário (primeira) ou null se não houver nenhuma. */
   listCompanies = async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) return errorResponse(res, 'Usuário não autenticado', 401);
 
       const companies = await this.companyService.getCompaniesByUserId(userId);
-      return successResponse(res, 'Empresas obtidas com sucesso', companies);
+      const company = companies.length > 0 ? companies[0]! : null;
+      return successResponse(res, company ? 'Empresa obtida com sucesso' : 'Nenhuma empresa cadastrada', company);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Erro ao listar empresas';
       return errorResponse(res, msg, 500);

@@ -13,12 +13,16 @@ interface PasswordInputProps {
   size?: string;
   borderColor?: string;
   disabled?: boolean;
+  bg?: string;
+  borderRadius?: string;
 }
 
 export const PasswordInput: React.FC<PasswordInputProps> = ({
   placeholder = 'Senha',
   size = 'lg',
   borderColor,
+  bg,
+  borderRadius,
   ...rest
 }) => {
   const [show, setShow] = useState(false);
@@ -29,8 +33,9 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         {...rest}
         type={show ? 'text' : 'password'}
         placeholder={placeholder}
-        
         borderColor={borderColor}
+        bg={bg}
+        borderRadius={borderRadius}
         pr="3rem"
       />
       <IconButton

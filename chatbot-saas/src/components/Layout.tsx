@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useRef } from 'react';
 import { Box, useDisclosure } from '@chakra-ui/react';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
+import { HelpTourFab } from './HelpTourFab';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,6 +13,7 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { onOpen, onClose } = useDisclosure();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -38,10 +42,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         minH="100vh"
       >
         <Navbar onOpen={onOpen} />
-        <Box p={6}>
+        <Box ref={mainContentRef} p={6}>
           {children}
         </Box>
       </Box>
+      <HelpTourFab mainContentRef={mainContentRef} />
     </Box>
   );
 };

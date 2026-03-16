@@ -126,6 +126,31 @@ body {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+/* Auth page floating orbs */
+@keyframes authFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes authGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.auth-orb-1 {
+  animation: authFloat 7s ease-in-out infinite, authGlow 7s ease-in-out infinite;
+}
+
+.auth-orb-2 {
+  animation: authFloat 9s ease-in-out infinite, authGlow 9s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+.auth-orb-3 {
+  animation: authFloat 11s ease-in-out infinite, authGlow 11s ease-in-out infinite;
+  animation-delay: -6s;
+}
+
 /* Loading spinner */
 .loading-spinner {
   display: inline-block;

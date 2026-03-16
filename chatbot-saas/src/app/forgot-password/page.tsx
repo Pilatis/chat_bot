@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Flex, VStack, Text, Input, Button } from '@chakra-ui/react';
+import { Box, Flex, VStack, Text, Button } from '@chakra-ui/react';
 import { FiArrowLeft } from 'react-icons/fi';
 import Link from 'next/link';
-import { Formik, Form, Field, FieldProps } from 'formik';
+import { Formik, Form } from 'formik';
 import { useAuth } from '../../hooks/useAuth';
 import { forgotPasswordSchema, ForgotPasswordFormData } from '../../schemas/auth.schemas';
 import { ContextaLogo } from '../../components/ContextaLogo';
+import { FormField } from '../../components/FormField';
 
 export default function ForgotPasswordPage() {
   const { forgotPassword, isLoading } = useAuth();
@@ -43,26 +44,18 @@ export default function ForgotPasswordPage() {
                 initialValues={initialValues}
                 validationSchema={forgotPasswordSchema}
                 onSubmit={handleSubmit}
+                validateOnChange={false}
+                validateOnBlur={false}
               >
                 {({ isSubmitting }) => (
                   <Form>
                     <VStack gap={4}>
-                      <Field name="email">
-                        {({ field, meta }: FieldProps) => (
-                          <Box w="full">
-                            <Input
-                              {...field}
-                              placeholder="Email"
-                              type="email"
-                              size="lg"
-                              borderColor={meta.touched && meta.error ? 'red.500' : undefined}
-                            />
-                            {meta.touched && meta.error && (
-                              <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
-                            )}
-                          </Box>
-                        )}
-                      </Field>
+                      <FormField
+                        name="email"
+                        label="Email"
+                        placeholder="seu@email.com"
+                        type="email"
+                      />
 
                       <Button
                         type="submit"

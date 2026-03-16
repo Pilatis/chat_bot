@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, Suspense,  } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
 import {
   Box,
   VStack,
@@ -154,7 +155,7 @@ export const Chatbot: React.FC = () => {
   }
 
 
-  if (!company) {
+  if (!company || company === null) {
     return (
       <Box>
         <VStack gap={8} align="stretch">
@@ -162,13 +163,26 @@ export const Chatbot: React.FC = () => {
             <Text fontSize="2xl" fontWeight="bold" color="gray.700">
               Assistente
             </Text>
+            <Text color="gray.600" mt={1}>
+              Sem empresa cadastrada, os campos do assistente não ficam disponíveis. Cadastre sua empresa primeiro para criar e configurar o assistente.
+            </Text>
           </Box>
           <Card>
             <EmptyState
-              title="Empresa não encontrada"
-              description="Cadastre sua empresa para configurar o assistente."
-              icon={<FiAlertCircle size={48} color="#ef4444" />}
-            />
+              title="Cadastre sua empresa primeiro"
+              description="Para criar um assistente, você precisa ter uma empresa cadastrada. Vá em Empresa no menu, preencha nome e descrição e salve. Depois volte aqui para criar seu primeiro assistente."
+              icon={<FiAlertCircle size={48} color="#f59e0b" />}
+            >
+              <Button
+                mt={4}
+                bg="contexta.500"
+                color="white"
+                _hover={{ bg: 'contexta.600' }}
+                asChild
+              >
+                <Link href="/company">Ir para Empresa</Link>
+              </Button>
+            </EmptyState>
           </Card>
         </VStack>
       </Box>
@@ -257,7 +271,7 @@ export const Chatbot: React.FC = () => {
     <Box>
       <VStack gap={8} align="stretch">
         {/* Cabeçalho */}
-        <Box>
+        <Box id="tour-chatbot-title">
           <HStack gap={4} align="center" flexWrap="wrap">
             <Text fontSize="2xl" fontWeight="bold" color="gray.700">
               Assistente
@@ -278,7 +292,7 @@ export const Chatbot: React.FC = () => {
         </Box>
 
         {/* Seção: Meu assistente */}
-        <Card>
+        <Card id="tour-chatbot-assistant-card">
           <VStack gap={4} align="stretch">
             <HStack justify="space-between" align="center" w="full">
               <Text as="h2" fontSize="lg" fontWeight="semibold" color="gray.800">
@@ -346,7 +360,7 @@ export const Chatbot: React.FC = () => {
         />
 
         {/* Seção: Treinar IA */}
-        <Card>
+        <Card id="tour-chatbot-train">
           <VStack gap={6} align="stretch">
             <Text as="h2" fontSize="lg" fontWeight="semibold" color="gray.800">
               Treinar IA com dados da empresa
@@ -379,7 +393,7 @@ export const Chatbot: React.FC = () => {
         </Card>
 
         {/* Seção: Simulador de conversa */}
-        <Card>
+        <Card id="tour-chatbot-simulator">
           <VStack gap={4} align="stretch">
             <Text as="h2" fontSize="lg" fontWeight="semibold" color="gray.800">
               Simulador de conversa
@@ -402,7 +416,7 @@ export const Chatbot: React.FC = () => {
         </Card>
 
         {/* Seção: Dicas para testar */}
-        <Card>
+        <Card id="tour-chatbot-tips">
           <VStack gap={4} align="stretch">
             <Text as="h2" fontSize="lg" fontWeight="semibold" color="gray.800">
               Dicas para testar

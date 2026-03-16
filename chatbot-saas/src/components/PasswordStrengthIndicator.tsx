@@ -15,7 +15,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
   if (!password) return null;
 
   return (
-    <Box w="full" mt={1}>
+    <Box w="full" mt={1.5}>
       <HStack gap={1}>
         {[1, 2, 3].map((i) => (
           <Box

@@ -28,7 +28,10 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await api.get('/company');
       
       if (response.data?.success) {
-        setCompany(response.data.data);
+        const data = response.data.data;
+
+        const company = Array.isArray(data) ? (data.length > 0 ? data[0]! : null) : (data ?? null);
+        setCompany(company);
       } else {
         showError(response.data?.message || 'Erro ao carregar empresa');
         setError(response.data?.message || 'Erro ao carregar empresa');

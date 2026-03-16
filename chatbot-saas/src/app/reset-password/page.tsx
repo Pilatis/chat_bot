@@ -1,18 +1,18 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import { Box, Flex, VStack, Text, Button } from '@chakra-ui/react';
+import { Box, Flex, VStack, Text, Button, Link } from '@chakra-ui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Formik, Form, Field, FieldProps } from 'formik';
+import { Formik, Form } from 'formik';
 import { useAuth } from '../../hooks/useAuth';
 import { resetPasswordSchema, ResetPasswordFormData } from '../../schemas/auth.schemas';
 import { ContextaLogo } from '../../components/ContextaLogo';
-import { PasswordInput } from '../../components/PasswordInput';
+import { FormField } from '../../components/FormField';
 import { PasswordStrengthIndicator } from '../../components/PasswordStrengthIndicator';
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
-  const token = searchParams.get('token') || '';
+  const token = searchParams?.get('token') ?? '';
   const { resetPassword, isLoading } = useAuth();
   const router = useRouter();
 
@@ -41,7 +41,7 @@ function ResetPasswordContent() {
             <Text color="gray.600">
               O link de redefinição de senha é inválido ou expirou.
             </Text>
-            <Button as="a" href="/forgot-password" variant="outline" colorPalette="purple">
+            <Button as={Link} onClick={() => router.push('/forgot-password')} variant="outline" colorPalette="purple">
               Solicitar novo link
             </Button>
           </VStack>
@@ -70,40 +70,27 @@ function ResetPasswordContent() {
               initialValues={initialValues}
               validationSchema={resetPasswordSchema}
               onSubmit={handleSubmit}
+              validateOnChange={false}
+              validateOnBlur={false}
             >
               {({ isSubmitting, values }) => (
                 <Form>
                   <VStack gap={4}>
-                    <Field name="password">
-                      {({ field, meta }: FieldProps) => (
-                        <Box w="full">
-                          <PasswordInput
-                            {...field}
-                            placeholder="Nova senha"
-                            borderColor={meta.touched && meta.error ? 'red.500' : undefined}
-                          />
-                          <PasswordStrengthIndicator password={values.password} />
-                          {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
-                          )}
-                        </Box>
-                      )}
-                    </Field>
+                    <FormField
+                      name="password"
+                      label="Nova senha"
+                      placeholder="Nova senha"
+                      type="password"
+                    >
+                      <PasswordStrengthIndicator password={values.password} />
+                    </FormField>
 
-                    <Field name="confirmPassword">
-                      {({ field, meta }: FieldProps) => (
-                        <Box w="full">
-                          <PasswordInput
-                            {...field}
-                            placeholder="Confirmar nova senha"
-                            borderColor={meta.touched && meta.error ? 'red.500' : undefined}
-                          />
-                          {meta.touched && meta.error && (
-                            <Text color="red.500" fontSize="sm" mt={1}>{meta.error}</Text>
-                          )}
-                        </Box>
-                      )}
-                    </Field>
+                    <FormField
+                      name="confirmPassword"
+                      label="Confirmar nova senha"
+                      placeholder="Confirmar nova senha"
+                      type="password"
+                    />
 
                     <Button
                       type="submit"
