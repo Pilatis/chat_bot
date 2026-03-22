@@ -6,110 +6,119 @@ import {
   Textarea,
   Field,
 } from '@chakra-ui/react';
-import { CreateServiceData, MACRO_CATEGORIES } from '../../../types/company.types';
-import { priceMask, priceUnmask } from '../../../utils/masks';
+import { useFormikContext } from 'formik';
+import { MACRO_CATEGORIES } from '@/types/company.types';
+import { priceMask, priceUnmask } from '@/utils/masks';
+import { useFormikFieldError } from '@/hooks/useFormikFieldError';
 import { CustomSelect } from '../../ui/select';
+import type { CreateServiceFormValues } from '@/schemas/company.schemas';
 
 interface AddServiceModalFormProps {
-  formData: CreateServiceData;
-  errors: Record<string, string>;
   isLoading: boolean;
-  onChange: (field: keyof CreateServiceData, value: string | number | undefined) => void;
 }
 
-export const AddServiceModalForm: React.FC<AddServiceModalFormProps> = ({
-  formData,
-  errors,
-  isLoading,
-  onChange,
-}) => {
+export const AddServiceModalForm: React.FC<AddServiceModalFormProps> = ({ isLoading }) => {
+  const { values, setFieldValue, setFieldTouched, handleBlur } =
+    useFormikContext<CreateServiceFormValues>();
+
+  const nameError = useFormikFieldError<CreateServiceFormValues>('name');
+  const categoryError = useFormikFieldError<CreateServiceFormValues>('category');
+  const descriptionError = useFormikFieldError<CreateServiceFormValues>('description');
+  const priceError = useFormikFieldError<CreateServiceFormValues>('price');
+
   return (
     <VStack gap={4} align="stretch">
-      <Field.Root invalid={!!errors.name}>
+      <Field.Root invalid={!!nameError}>
         <Field.Label>
           Nome do Serviço <Text as="span" color="red.500">*</Text>
         </Field.Label>
         <Input
+          name="name"
           placeholder="Ex: Consultoria em Marketing Digital"
-          value={formData.name}
-          onChange={(e) => onChange('name', e.target.value)}
+          value={values.name}
+          onChange={(e) => setFieldValue('name', e.target.value)}
+          onBlur={handleBlur}
           disabled={isLoading}
         />
-        {errors.name && (
-          <Field.ErrorText>{errors.name}</Field.ErrorText>
-        )}
+        {nameError && <Field.ErrorText>{nameError}</Field.ErrorText>}
         <Field.HelperText>
           Nome claro e descritivo do serviço
         </Field.HelperText>
       </Field.Root>
 
-      <Field.Root invalid={!!errors.category}>
+      <Field.Root invalid={!!categoryError}>
         <Field.Label>
           Categoria <Text as="span" color="red.500">*</Text>
         </Field.Label>
         <CustomSelect
-          value={formData.category}
-          onChange={(value) => onChange('category', value as CreateServiceData['category'])}
-          options={MACRO_CATEGORIES.map(c => ({ value: c.value, label: c.label }))}
+          value={values.category}
+          onChange={(value) => {
+            setFieldValue('category', value);
+            setFieldTouched('category', true);
+          }}
+          options={MACRO_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
           placeholder="Selecione a categoria"
           size="md"
         />
-        {errors.category && (
-          <Field.ErrorText>{errors.category}</Field.ErrorText>
-        )}
+        {categoryError && <Field.ErrorText>{categoryError}</Field.ErrorText>}
         <Field.HelperText>
           Macro-categoria do serviço para organização e IA
         </Field.HelperText>
       </Field.Root>
 
-      <Field.Root>
-        <Field.Label>Descrição</Field.Label>
+      <Field.Root invalid={!!descriptionError}>
+        <Field.Label>
+          Descrição <Text as="span" color="red.500">*</Text>
+        </Field.Label>
         <Textarea
+          name="description"
           placeholder="Descreva o serviço: escopo, benefícios e como é entregue..."
-          value={formData.description || ''}
-          onChange={(e) => onChange('description', e.target.value)}
+          value={values.description ?? ''}
+          onChange={(e) => setFieldValue('description', e.target.value)}
+          onBlur={handleBlur}
           rows={4}
           resize="vertical"
           disabled={isLoading}
         />
+        {descriptionError && <Field.ErrorText>{descriptionError}</Field.ErrorText>}
         <Field.HelperText>
           Quanto mais detalhada a descrição, melhor o chatbot poderá responder sobre este serviço
         </Field.HelperText>
       </Field.Root>
 
-      <Field.Root invalid={!!errors.price}>
+      <Field.Root invalid={!!priceError}>
         <Field.Label>Preço (R$)</Field.Label>
         <Input
           type="text"
+          name="price"
           placeholder="0,00"
           value={
-            formData.price !== undefined && formData.price > 0
-              ? priceMask(String(Math.round(formData.price * 100)))
+            values.price != null && values.price > 0
+              ? priceMask(String(Math.round(values.price * 100)))
               : ''
           }
           onChange={(e) => {
             const inputValue = e.target.value;
             if (!inputValue || inputValue.trim() === '') {
-              onChange('price', undefined);
+              setFieldValue('price', undefined);
               return;
             }
             const unmasked = priceUnmask(inputValue);
-            onChange('price', unmasked !== undefined ? unmasked : undefined);
+            setFieldValue('price', unmasked !== undefined ? unmasked : undefined);
           }}
           onBlur={(e) => {
+            handleBlur(e);
             const inputValue = e.target.value;
             if (inputValue && inputValue.trim() !== '') {
               const unmasked = priceUnmask(inputValue);
               if (unmasked !== undefined) {
-                onChange('price', unmasked);
+                setFieldValue('price', unmasked);
               }
             }
           }}
           disabled={isLoading}
         />
-        {errors.price && (
-          <Field.ErrorText>{errors.price}</Field.ErrorText>
-        )}
+        {priceError && <Field.ErrorText>{priceError}</Field.ErrorText>}
         <Field.HelperText>
           Deixe em branco se o preço não se aplica ou varia conforme o caso
         </Field.HelperText>

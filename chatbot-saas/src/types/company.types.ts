@@ -76,7 +76,7 @@ export interface CreateCompanyData {
 
 export interface CreateProductData {
   name: string;
-  description?: string;
+  description: string;
   price?: number;
   category: MacroCategory;
 }
@@ -90,7 +90,7 @@ export interface UpdateProductData {
 
 export interface CreateServiceData {
   name: string;
-  description?: string;
+  description: string;
   price?: number;
   category: MacroCategory;
 }

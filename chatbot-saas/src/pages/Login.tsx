@@ -17,6 +17,7 @@ import { loginSchema, LoginFormData } from '../schemas/auth.schemas';
 import { ContextaLogo } from '../components/ContextaLogo';
 import { FormField } from '../components/FormField';
 import { FiMessageSquare, FiZap, FiBarChart2 } from 'react-icons/fi';
+import { AUTH_ROUTES } from '@/config/authRoutes';
 
 const features = [
   { icon: FiMessageSquare, text: 'Chatbots inteligentes e personalizáveis' },
@@ -187,7 +188,7 @@ export const Login: React.FC = () => {
                       />
 
                       <Box w="full" textAlign="right">
-                          <Link href="/forgot-password">
+                          <Link href={AUTH_ROUTES.forgotPassword}>
                             <Text
                               as="span"
                               fontSize="sm"
@@ -228,7 +229,7 @@ export const Login: React.FC = () => {
               <Text color="grayBold" fontSize="sm">
                 Ainda não tem conta?
               </Text>
-              <Link href="/register">
+              <Link href={AUTH_ROUTES.register}>
                 <Text
                   as="span"
                   color="contexta.500"

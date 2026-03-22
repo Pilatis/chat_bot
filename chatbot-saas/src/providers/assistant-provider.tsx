@@ -27,7 +27,7 @@ export const AssistantProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       setIsLoading(true);
       setError(null);
-      const response = await api.get(`/company/${companyId}/assistant`);
+      const response = await api.get(`/company/${companyId}/assistants`);
       if (response.data?.success && Array.isArray(response.data.data)) {
         setAssistants(response.data.data);
       } else {
@@ -49,7 +49,7 @@ export const AssistantProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   ): Promise<AssistantProviderResult> => {
     try {
       setError(null);
-      const response = await api.post(`/company/${companyId}/assistant`, data);
+      const response = await api.post(`/company/${companyId}/assistants`, data);
       if (response.data?.success) {
         await refreshAssistants(companyId);
         showSuccess(response.data?.message || 'Assistente criado com sucesso');
@@ -73,7 +73,17 @@ export const AssistantProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   ): Promise<AssistantProviderResult> => {
     try {
       setError(null);
-      const response = await api.put(`/assistant/${assistantId}`, data);
+      const companyId = company?.id;
+      if (!companyId) {
+        const msg = 'Empresa não selecionada';
+        showError(msg);
+        setError(msg);
+        return 'failure';
+      }
+      const response = await api.put(
+        `/company/${companyId}/assistants/${assistantId}`,
+        data
+      );
       if (response.data?.success) {
         if (company?.id) await refreshAssistants(company.id);
         showSuccess(response.data?.message || 'Assistente atualizado com sucesso');
@@ -94,7 +104,16 @@ export const AssistantProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const deleteAssistant = async (assistantId: string): Promise<AssistantProviderResult> => {
     try {
       setError(null);
-      const response = await api.deleted(`/assistant/${assistantId}`);
+      const companyId = company?.id;
+      if (!companyId) {
+        const msg = 'Empresa não selecionada';
+        showError(msg);
+        setError(msg);
+        return 'failure';
+      }
+      const response = await api.deleted(
+        `/company/${companyId}/assistants/${assistantId}`
+      );
       if (response.data?.success) {
         if (company?.id) await refreshAssistants(company.id);
         showSuccess(response.data?.message || 'Assistente removido com sucesso');

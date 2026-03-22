@@ -84,13 +84,13 @@ export class AuthController {
       const token = req.query['token'] as string;
 
       if (!token) {
-        return res.redirect(`${FRONTEND_URL}/verify-email/confirm?status=error&reason=missing_token`);
+        return res.redirect(`${FRONTEND_URL}/auth/verify-email/confirm?status=error&reason=missing_token`);
       }
 
       await this.authService.verifyEmail(token);
-      return res.redirect(`${FRONTEND_URL}/verify-email/confirm?status=success`);
+      return res.redirect(`${FRONTEND_URL}/auth/verify-email/confirm?status=success`);
     } catch {
-      return res.redirect(`${FRONTEND_URL}/verify-email/confirm?status=error`);
+      return res.redirect(`${FRONTEND_URL}/auth/verify-email/confirm?status=error`);
     }
   };
 

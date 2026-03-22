@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useToast } from './useToast';
 import { getLocalItem, setLocalItem, removeLocalItem } from '@/utils/storage';
 import { getApiErrorMessage } from '@/utils/api';
+import { AUTH_ROUTES } from '@/config/authRoutes';
 
 const SESSION_EXPIRED_DEFAULT = 'Sessão expirada. Faça login novamente.';
 
@@ -35,7 +36,7 @@ export function useUnauthorizedHandler({
       removeLocalItem('refreshToken');
       window.dispatchEvent(new CustomEvent('auth:session-expired'));
       showError(message ?? SESSION_EXPIRED_DEFAULT, { title: 'Não autorizado' });
-      router.replace('/login');
+      router.replace(AUTH_ROUTES.login);
     },
     [router, showError]
   );

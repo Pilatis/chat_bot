@@ -14,6 +14,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { AvatarComponent } from './Avatar';
 import { ContextaLogo } from './ContextaLogo';
+import { AUTH_ROUTES } from '@/config/authRoutes';
 
 interface NavbarProps {
   onOpen: () => void;
@@ -26,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpen, display }) => {
 
   const handleLogout = () => {
     logout();
-    router.replace('/login');
+    router.replace(AUTH_ROUTES.login);
   };
 
   return (

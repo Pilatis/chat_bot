@@ -1,6 +1,7 @@
 import { useEffect, useContext } from 'react';
 import { AuthContext } from '../context/auth-context';
 import { AuthContextType } from '../types/auth.types';
+import { AUTH_ROUTES } from '@/config/authRoutes';
 
 // Hook para usar autenticação
 export const useAuth = (): AuthContextType => {
@@ -18,7 +19,7 @@ export const useRequireAuth = () => {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       // Redirecionar para login se não estiver autenticado
-      window.location.href = '/login';
+      window.location.href = AUTH_ROUTES.login;
     }
   }, [isAuthenticated, isLoading]);
 

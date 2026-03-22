@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/Layout';
 import { Loading } from '@/components/Loading';
+import { AUTH_ROUTES } from '@/config/authRoutes';
 
 export default function DashboardLayout({
   children,
@@ -17,7 +18,7 @@ export default function DashboardLayout({
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      router.replace('/login');
+      router.replace(AUTH_ROUTES.login);
     }
   }, [user, isLoading, router]);
 
